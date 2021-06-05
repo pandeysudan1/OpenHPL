@@ -9,6 +9,10 @@ model DroopControllerPI "Droop controller model PI inside"
     Dialog(group = "Controller parameter"));
   parameter Real D = 4 "Droop characteristics of the generator in percentage" annotation (
     Dialog(group = "Controller parameter"));
+  parameter Real Kp = 0.003 "Kp value of PI controller" annotation (
+    Dialog(group = "Controller parameter"));
+  parameter Real Ti = 10 "Ti value of PI controller" annotation (
+    Dialog(group = "Controller parameter"));
   Modelica.Blocks.Interfaces.RealInput P_sg
     annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
   Modelica.Blocks.Interfaces.RealInput f_grid
@@ -23,8 +27,8 @@ model DroopControllerPI "Droop controller model PI inside"
         Real P_dy_ref;
   Modelica.Blocks.Continuous.LimPID PIController(
     controllerType=Modelica.Blocks.Types.SimpleController.PI,
-    k=0.003,
-    Ti=10,
+    k=Kp,
+    Ti=Ti,
     yMax=1,
     yMin=0.01)
     annotation (Placement(transformation(extent={{-36,46},{-16,66}})));
