@@ -39,22 +39,20 @@ model TrollheimDroopBlockTest
     Placement(visible = true, transformation(extent = {{-70, 20}, {-50, 40}}, rotation = 0)));
   Modelica.Blocks.Sources.Ramp load(
     duration=0,
-    height=0.1*50e6,
+    height=0.5*50e6,
     offset=50e6,
     startTime=20) annotation (Placement(visible=true, transformation(
         origin={-30,-30},
         extent={{-10,-10},{10,10}},
         rotation=0)));
-  Modelica.Blocks.Sources.RealExpression realExpression(y=gen.f)
-    annotation (Placement(transformation(extent={{-90,52},{-70,72}})));
-  Modelica.Blocks.Sources.RealExpression DeltaP(y=gen.W_g)
-    annotation (Placement(transformation(extent={{-90,76},{-70,96}})));
   ElectroMech.Generators.SimpleGen gen(
     J=10e5,
     theta_e=1,
     k_b=0) annotation (Placement(transformation(extent={{20,-40},{40,-20}})));
-  Controllers.DroopControllerPI droopControllerPI(P_r=130e6)
-    annotation (Placement(transformation(extent={{-40,62},{-20,82}})));
+  Modelica.Blocks.Sources.RealExpression DeltaP1(y=gen.f)
+    annotation (Placement(transformation(extent={{-90,76},{-70,96}})));
+  Controllers.PICont pICont
+    annotation (Placement(transformation(extent={{-18,66},{2,86}})));
 equation
 //connect(turbine.P_out, aggregate.P_in) annotation(
 //  Line(points = {{-3.8, 34}, {2, 34}, {2, 14}, {2, 14}}, color = {0, 0, 127}));
@@ -76,12 +74,10 @@ equation
     annotation (Line(points={{30,-1},{30,-18}}, color={0,0,127}));
   connect(load.y, gen.u)
     annotation (Line(points={{-19,-30},{20,-30}}, color={0,0,127}));
-  connect(DeltaP.y, droopControllerPI.P_sg) annotation (Line(points={{-69,86},{
-          -56,86},{-56,78},{-42,78}}, color={0,0,127}));
-  connect(realExpression.y, droopControllerPI.f_grid) annotation (Line(points={
-          {-69,62},{-56,62},{-56,66},{-42,66}}, color={0,0,127}));
-  connect(droopControllerPI.u_v, turbine.u_t)
-    annotation (Line(points={{-19,72},{30,72},{30,22}}, color={0,0,127}));
+  connect(DeltaP1.y, pICont.u) annotation (Line(points={{-69,86},{-44,86},{-44,
+          76},{-20,76}}, color={0,0,127}));
+  connect(turbine.u_t, pICont.y) annotation (Line(points={{30,22},{18,22},{18,
+          76},{4,76}}, color={0,0,127}));
   annotation (
     experiment(StartTime = -1000, StopTime = 1000, __Dymola_NumberOfIntervals = 10000, __Dymola_Algorithm = "Dassl"));
 end TrollheimDroopBlockTest;

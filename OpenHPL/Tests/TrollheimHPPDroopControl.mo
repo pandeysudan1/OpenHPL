@@ -42,32 +42,23 @@ model TrollheimHPPDroopControl
     height=0.5*130e6,
     offset=0.1*130e6,
     startTime=20) annotation (Placement(visible=true, transformation(
-        origin={-30,-50},
+        origin={-26,-30},
         extent={{-10,-10},{10,10}},
         rotation=0)));
-  Modelica.Blocks.Continuous.LimPID PID(
-    controllerType=Modelica.Blocks.Types.SimpleController.PI,
-    k=0.003,
-    Ti=10,
-    yMax=1,
-    yMin=0.01) annotation (Placement(transformation(extent={{-20,72},{0,92}})));
   Modelica.Blocks.Sources.RealExpression realExpression(y=gen.f)
     annotation (Placement(transformation(extent={{-84,50},{-64,70}})));
-  Modelica.Blocks.Sources.RealExpression DeltaP(y=-(130/0.04)*(gen.f - 50)/50
-         + gen.W_g)
-    annotation (Placement(transformation(extent={{-62,80},{-42,100}})));
-  Modelica.Blocks.Math.Gain gain(k=1)
-    annotation (Placement(transformation(extent={{14,60},{34,80}})));
   ElectroMech.Generators.SimpleGen gen(
     J=5e5,
     theta_e=1,
     k_b=0) annotation (Placement(transformation(extent={{20,-40},{40,-20}})));
-  Controllers.DroopController Droop(
-    f_ref=50,
-    P_r=130e6,
-    D=4) annotation (Placement(transformation(extent={{-50,58},{-30,78}})));
   Modelica.Blocks.Sources.RealExpression realExpression1(y=gen.W_g)
-    annotation (Placement(transformation(extent={{-84,66},{-64,86}})));
+    annotation (Placement(transformation(extent={{-34,50},{-14,70}})));
+  Modelica.Blocks.Continuous.PI PI(k=0.003, T=10)
+    annotation (Placement(transformation(extent={{34,56},{54,76}})));
+  Modelica.Blocks.Math.Add add(k2=-1)
+    annotation (Placement(transformation(extent={{2,56},{22,76}})));
+  Modelica.Blocks.Nonlinear.Limiter limiter(uMax=1, uMin=0.01)
+    annotation (Placement(transformation(extent={{72,48},{92,68}})));
 equation
 //connect(turbine.P_out, aggregate.P_in) annotation(
 //  Line(points = {{-3.8, 34}, {2, 34}, {2, 14}, {2, 14}}, color = {0, 0, 127}));
@@ -85,22 +76,18 @@ equation
     Line(points = {{-50, 30}, {-40, 30}}, color = {28, 108, 200}));
   connect(surgeTank.n, penstock.p) annotation (
     Line(points = {{-20, 30}, {-10, 30}}, color = {28, 108, 200}));
-  connect(PID.y, gain.u) annotation (Line(points={{1,82},{10,82},{10,70},{12,70}},
-        color={0,0,127}));
-  connect(turbine.u_t, gain.y) annotation (Line(points={{30,22},{42,22},{42,70},
-          {35,70}}, color={0,0,127}));
   connect(turbine.P_out, gen.P_in)
     annotation (Line(points={{30,-1},{30,-18}}, color={0,0,127}));
-  connect(load.y, gen.u) annotation (Line(points={{-19,-50},{0,-50},{0,-30},{20,
-          -30}}, color={0,0,127}));
-  connect(realExpression.y, Droop.f_grid) annotation (Line(points={{-63,60},{
-          -58,60},{-58,62},{-52,62}}, color={0,0,127}));
-  connect(Droop.P_sg, realExpression1.y) annotation (Line(points={{-52,74},{-58,
-          74},{-58,76},{-63,76}}, color={0,0,127}));
-  connect(Droop.P_dy_ref, PID.u_s) annotation (Line(points={{-29,74},{-26,74},{
-          -26,82},{-22,82}}, color={0,0,127}));
-  connect(Droop.P_g, PID.u_m) annotation (Line(points={{-29,62},{-20,62},{-20,
-          70},{-10,70}}, color={0,0,127}));
+  connect(load.y, gen.u)
+    annotation (Line(points={{-15,-30},{20,-30}}, color={0,0,127}));
+  connect(PI.u, add.y)
+    annotation (Line(points={{32,66},{23,66}}, color={0,0,127}));
+  connect(add.u2, realExpression1.y)
+    annotation (Line(points={{0,60},{-13,60}}, color={0,0,127}));
+  connect(PI.y, limiter.u) annotation (Line(points={{55,66},{62,66},{62,58},{70,
+          58}}, color={0,0,127}));
+  connect(limiter.y, turbine.u_t) annotation (Line(points={{93,58},{68,58},{68,
+          22},{30,22}}, color={0,0,127}));
   annotation (
     experiment(StartTime = -1000, StopTime = 1000, __Dymola_NumberOfIntervals = 10000, __Dymola_Algorithm = "Dassl"));
 end TrollheimHPPDroopControl;

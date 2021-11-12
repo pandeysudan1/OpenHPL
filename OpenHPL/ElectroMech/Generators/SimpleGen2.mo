@@ -6,7 +6,7 @@ model SimpleGen2 "Model of a simple generator"
   //// geometrical parameters of the agreggate
   parameter Modelica.SIunits.MomentOfInertia J = 5e5 "Moment of inertia of the generator";
   //// variables
-  Modelica.SIunits.AngularVelocity f(start = 50) "Frequency";
+  Modelica.SIunits.Frequency f(start = 50) "Frequency";
   Modelica.SIunits.EnergyFlowRate Pm "Shaft power";
   Modelica.SIunits.EnergyFlowRate Pe = u  "Electrical power";
   //// conectors
@@ -15,10 +15,10 @@ model SimpleGen2 "Model of a simple generator"
   Modelica.Blocks.Interfaces.RealInput P_in = Pm "Input of mechanical power" annotation (
     Placement(visible = true, transformation(origin={3.55271e-15,120},
                                                                   extent={{-20,-20},{20,20}},      rotation = 270)));
-initial equation
-  der(f) = 0;
+
+
 equation
-  der(f) = 1/J*(Pm-Pe)
+  der(f) = 1/(4*pi*pi*f*J)*(Pm-Pe)
   annotation (
     Documentation(info="<html><p>Simple model of an ideal generator with friction.</p>
 <p>This model has inputs as electric power available on the grid and the turbine shaft power.
