@@ -11,6 +11,16 @@ model Turbine "Simple turbine model with mechanical connectors"
     annotation (Dialog(group = "Efficiency data"), choices(checkBox = true));
   parameter SI.Efficiency eta_h = 0.9 "Hydraulic efficiency"
     annotation (Dialog(group = "Efficiency data", enable = ConstEfficiency));
+  parameter SI.Time T_servo = 1e-4 "Servo lag time constant"
+    annotation (Dialog(tab = "Servo", group = "Dynamics"));
+  parameter SI.Time delay_servo = 0 "Servo time delay"
+    annotation (Dialog(tab = "Servo", group = "Dynamics"));
+  parameter Real backlash = 0 "Backlash width in opening signal pu"
+    annotation (Dialog(tab = "Servo", group = "Dynamics"));
+  parameter Real du_max = 1e6 "Maximum opening rate (pu/s)"
+    annotation (Dialog(tab = "Servo", group = "Dynamics"));
+  parameter Real du_min = 1e6 "Maximum closing rate magnitude (pu/s)"
+    annotation (Dialog(tab = "Servo", group = "Dynamics"));
   replaceable parameter OpenHPL.Types.Efficiency VarEfficiency constrainedby OpenHPL.Types.Efficiency
     "Look-up table for the turbine efficiency, described by a table matrix,
      where the first column is a pu value of the opening, and the second column is a pu value of the turbine efficiency."
@@ -27,8 +37,17 @@ model Turbine "Simple turbine model with mechanical connectors"
 
 protected
   SI.EnergyFlowRate Kdot_i_tr "Gross hydraulic power";
+  Real u_backlash(start = 0, min = 0, max = 1) "Backlash output";
+  Real u_target(start = 0, min = 0, max = 1) "Delayed target opening";
+  Real u_servo(start = 0, min = 0, max = 1) "Servo output opening";
 
 equation
+  // Optional servo dynamics (backlash + transport delay + rate-limited first-order lag).
+  u_backlash = min(1, max(0, noEvent(if u_t > u_servo + backlash/2 then u_t - backlash/2 elseif u_t < u_servo - backlash/2 then u_t + backlash/2 else u_servo)));
+  u_target = min(1, max(0, delay(u_backlash, delay_servo)));
+  der(u_servo) = min(du_max, max(-du_min, (u_target - u_servo)/T_servo));
+  u = u_servo;
+
   efficiencyCurve.u[1] = u "Link the opening";
   if ConstEfficiency then
     Wdot_s = eta_h * Kdot_i_tr;
@@ -43,7 +62,6 @@ equation
       pattern=LinePattern.Dash));
   connect(lossCorrection.u1, power.y) annotation (Line(points={{-48,80},{-88,80},{-88,30},{-81,30}},color={0,0,127}));
   connect(frictionLoss.power, lossCorrection.u2) annotation (Line(points={{-1,12},{-40,12},{-40,72}},color={0,0,127}));
-  connect(u_t, u) annotation (Line(points={{-80,120},{-80,90},{0,90},{0,70}},color={0,0,127}));
   annotation (preferredView="info",
     Documentation(info="<html>
 <h4>Simple Turbine Model</h4>

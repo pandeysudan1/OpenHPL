@@ -45,6 +45,16 @@ model Francis "Model of the Francis turbine"
         Dialog(group = "Parameters for low load"));
     parameter Real u_min = 0.03 "Control signal value under which the moodel used k_f4 friction term to balance the model" annotation (
         Dialog(group = "Parameters for low load"));
+    parameter SI.Time T_servo = 1e-4 "Servo lag time constant" annotation (
+      Dialog(tab = "Servo", group = "Dynamics"));
+    parameter SI.Time delay_servo = 0 "Servo time delay" annotation (
+      Dialog(tab = "Servo", group = "Dynamics"));
+    parameter Real backlash = 0 "Backlash width in opening signal pu" annotation (
+      Dialog(tab = "Servo", group = "Dynamics"));
+    parameter Real du_max = 1e6 "Maximum opening rate (pu/s)" annotation (
+      Dialog(tab = "Servo", group = "Dynamics"));
+    parameter Real du_min = 1e6 "Maximum closing rate magnitude (pu/s)" annotation (
+      Dialog(tab = "Servo", group = "Dynamics"));
   parameter Modelica.Units.NonSI.Angle_deg beta1_=110 "Turbine inlet blade angle" annotation (Dialog(group="Runner", enable=GivenData));
   parameter Modelica.Units.NonSI.Angle_deg beta2_=162.5 "Turbine outlet blade angle" annotation (Dialog(group="Runner", enable=GivenData));
     parameter Real Reduction = 0.2 "Reduction the given formula for the guide vane pressure drop" annotation (
@@ -78,6 +88,9 @@ model Francis "Model of the Francis turbine"
     Real u_end "Servo position for fully open guide vane", u_start "Servo position for fully close guide vane";
     Real W_t2_n "Euler second term, nominal", W_t1_n "Euler first term, nominal", Wdot_t_n "Total power, nominal", cot_a1_n "Cotant nominal alpha", Vdot_n_ = Vdot_n / 0.99 "Flow rate for fully open guide vane", d_n(start = 0.67) "Nominal servo term", theta_n "Servo angle for fully open guide vane";
     SI.Angle alpha1_n "Nominal inlet guide vane angle";
+    Real u_backlash(start = 0, min = 0, max = 1) "Backlash output";
+    Real u_target(start = 0, min = 0, max = 1) "Delayed target opening";
+    Real u_servo(start = 0, min = 0, max = 1) "Servo output opening";
     // connectors
     extends OpenHPL.Interfaces.TurbineContacts(enable_P_out=true);
     Modelica.Blocks.Interfaces.RealInput w_in "Input angular velocity from the generator" annotation (
@@ -89,6 +102,11 @@ protected
         rotation=90,
         origin={40,90})));
 equation
+  // Optional servo dynamics (backlash + transport delay + rate-limited first-order lag).
+    u_backlash = min(1, max(0, noEvent(if u_t > u_servo + backlash/2 then u_t - backlash/2 elseif u_t < u_servo - backlash/2 then u_t + backlash/2 else u_servo)));
+    u_target = min(1, max(0, delay(u_backlash, delay_servo)));
+    der(u_servo) = min(du_max, max(-du_min, (u_target - u_servo)/T_servo));
+
   // design algorithm for runner
     if GivenData then
         R_1 = R_1_;
@@ -175,7 +193,7 @@ equation
     W_t2 = mdot * w * R_2 * (w * R_2 + Vdot / A_2 * cot_b2);
     Wdot_s = W_t1 - W_t2;
   // condition for low load
-    if u_t < u_min then
+    if u_servo < u_min then
         Wdot_ft_s = 0;
         Wdot_ft_w = 0;
         Wdot_ft_l = k_ft4 * Vdot ^ 2;
@@ -187,7 +205,7 @@ equation
   // losses in the runner
     Wdot_ft = Wdot_ft_s + Wdot_ft_w + Wdot_ft_l;
   // servo model, define guide vane opening and alpha1
-    Y = u_start + u_t * (u_end - u_start);
+    Y = u_start + u_servo * (u_end - u_start);
     Y ^ 2 = r_Y ^ 2 + R_Y ^ 2 - 2 * r_Y * R_Y * Modelica.Math.cos(theta);
     dtheta = theta - theta0;
     d ^ 2 = r_v ^ 2 + R_v ^ 2 - 2 * r_v * R_v * Modelica.Math.cos(dtheta);
