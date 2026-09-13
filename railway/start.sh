@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 mkdir -p /workspace/results /workspace/run
-echo "=== OpenHPL Railway notebook startup ==="
+echo "=== OpenHPL Railway startup ==="
 omc --version
-echo "Executing notebook..."
+chmod +x /workspace/OpenHPL-repo/railway/run_model.sh
+/workspace/OpenHPL-repo/railway/run_model.sh
+echo "=== OPENHPL SIMULATION FINISHED ==="
+echo "Executing notebook for analysis and plot..."
 jupyter nbconvert --to notebook --execute /workspace/OpenHPL-repo/railway/notebooks/02_simple_turbine.ipynb \
   --output /workspace/results/02_simple_turbine.executed.ipynb \
   --ExecutePreprocessor.timeout=600
