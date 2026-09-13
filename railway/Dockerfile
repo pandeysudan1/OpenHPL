@@ -5,7 +5,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     python3 python3-pip python3-venv git ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install --break-system-packages --no-cache-dir \
+RUN python3 -m pip install --no-cache-dir \
     jupyterlab nbconvert pandas matplotlib OMPython
 
 RUN git clone --depth 1 --branch v3.0.0 https://github.com/OpenIPSL/OpenIPSL.git /opt/OpenIPSL
