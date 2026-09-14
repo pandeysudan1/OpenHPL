@@ -9,7 +9,7 @@ loadFile("/workspace/OpenHPL-repo/OpenHPL/package.mo","UTF-8",false);
 getErrorString();
 checkModel(OpenHPL.Examples.AGC_Trollheim.TrollheimAGC);
 getErrorString();
-simulate(OpenHPL.Examples.AGC_Trollheim.TrollheimAGC,startTime=0,stopTime=65,numberOfIntervals=3250,tolerance=1e-7,outputFormat="csv",variableFilter="time|frequency_Hz|mechanicalPower|electricalLoad|guideVane|turbineFlow|generator.f|governor.gate|governor.x_i|turbine.Wdot_s|turbine.Vdot|loadStep.y");
+simulate(OpenHPL.Examples.AGC_Trollheim.TrollheimAGC,startTime=0,stopTime=65,numberOfIntervals=3250,tolerance=1e-7,outputFormat="csv",variableFilter="time|frequency_Hz|mechanicalPower|electricalLoad|guideVane|turbineFlow|generator.f|governor.gate|governor.x_i|turbine.Wdot_s|turbine.Vdot|loadStep.y|intake.i.p|intake.o.p|penstock.i.p|penstock.o.p|turbine.i.p|turbine.o.p|discharge.i.p|discharge.o.p");
 getErrorString();
 EOF
 
@@ -41,6 +41,12 @@ print('FINAL_Pm_MW=',float(df.iloc[-1][pm]/1e6))
 print('FINAL_PL_MW=',float(df.iloc[-1][pl]/1e6))
 print('FINAL_gate_pu=',float(df.iloc[-1][g]))
 print('FINAL_flow_m3s=',float(df.iloc[-1][q]))
+r0=df.iloc[0]
+for name in ['intake.i.p','intake.o.p','penstock.i.p','penstock.o.p','turbine.i.p','turbine.o.p','discharge.i.p','discharge.o.p']:
+    if name in df.columns:
+        print('EQ_'+name.replace('.','_')+'_Pa=',float(r0[name]))
+print('EQ_turbineFlow_m3s=',float(r0[q]))
+print('EQ_gate_pu=',float(r0[g]))
 PY
 
 echo "RESULT_CSV=/workspace/results/AGC_Trollheim_res.csv"
