@@ -70,9 +70,9 @@ model AGC_Trollheim "Trollheim HPP AGC benchmark: 75 MW to 90 MW load step at t=
     enable_f=true) annotation (Placement(transformation(extent={{28,-28},{48,-8}})));
 
   OpenHPL.ElectroMech.PowerSystem.SimpleGovernorAGC governor(
-    R=0.05,
+    R=0.20,
     T_g=0.30,
-    K_i=1.5,
+    K_i=0.15,
     u_bias=0.50,
     u_min=0.05,
     u_max=1.0) annotation (Placement(transformation(extent={{-24,52},{-4,72}})));
@@ -114,5 +114,5 @@ initial equation
 
   annotation (
     experiment(StartTime=0, StopTime=65, Tolerance=1e-7, Interval=0.02),
-    Documentation(info="<html><h4>AGC_Trollheim</h4><p>Well-posed Trollheim-inspired OpenHPL benchmark derived from the user's HydroSyncBridge.jl parameter set. Initial loading is 75 MW (50% of 150 MW). At t=5 s the load increases by 15 MW to 90 MW (60%). The nonlinear hydraulic path uses intake, penstock, turbine and discharge models. A simple generator, mechanical grid equivalent and droop-plus-integral AGC governor close the frequency-control loop.</p><p>The hydraulic geometry and machine rating are transferred benchmark values and are not independently field-verified plant data. A surge-tank variant was tested during development but its coupled steady-state initialization did not converge robustly in OpenModelica, so the validated v1 benchmark intentionally omits that storage element; the documented next-fidelity step is to reintroduce it using a dedicated equilibrium/warm-start procedure.</p></html>"));
+    Documentation(info="<html><h4>AGC_Trollheim</h4><p>Well-posed Trollheim-inspired OpenHPL benchmark derived from the user's HydroSyncBridge.jl parameter set. Initial loading is 75 MW (50% of 150 MW). At t=5 s the load increases by 15 MW to 90 MW (60%). The nonlinear hydraulic path uses intake, penstock, turbine and discharge models. A simple generator, mechanical grid equivalent and droop-plus-integral AGC governor close the frequency-control loop.</p><p>The controller is deliberately gentler than AGC_SMIB (R=20%, Ki=0.15 1/s) because the transferred Trollheim rotor inertia and long waterways produce strong hydro inverse-response dynamics. These gains are engineering benchmark values selected by reduced-model forensic analysis and then verified against the nonlinear OpenHPL simulation.</p><p>The hydraulic geometry and machine rating are transferred benchmark values and are not independently field-verified plant data. A surge-tank variant was tested during development but its coupled steady-state initialization did not converge robustly in OpenModelica, so the validated v1 benchmark intentionally omits that storage element; the documented next-fidelity step is to reintroduce it using a dedicated equilibrium/warm-start procedure.</p></html>"));
 end AGC_Trollheim;
