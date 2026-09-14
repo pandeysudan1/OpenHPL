@@ -1,111 +1,186 @@
-"""Reduced 5+3 hydro reference model for tuning the full OpenHPL two-area benchmark.
+"""Heterogeneous 5+3 hydro two-area reference model.
 
-States are area frequency deviations, tie-line angle, distributed governor/turbine
-increments, and one secondary ACE state per area. The script reproduces the
-metrics quoted in README.md and writes CSV/SVG outputs when run with SciPy,
-NumPy, pandas and matplotlib available.
+Purpose
+-------
+Study two distinct layers of electromechanical dynamics:
+1. common/COI area-frequency and tie-line modes;
+2. inter-machine oscillations inside each hydro area.
+
+Each Trollheim-like unit has different rating, inertia, permanent droop,
+transient-droop compensation, governor/turbine time constant, and gate-rate
+limit. Integration uses max_step = 0.1 s.
 """
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 
-N1, N2 = 5, 3
-S1, S2 = 750.0, 450.0       # MW
-F0 = 50.0                    # Hz
-H1 = H2 = 4.0                # s
-M1, M2 = 2*H1*S1/F0, 2*H2*S2/F0
-D1, D2 = 15.0, 9.0           # MW/Hz
-R = 0.05                     # 5% droop
-KP1, KP2 = S1/(R*F0), S2/(R*F0)
-B1, B2 = KP1 + D1, KP2 + D2 # MW/Hz
-TG, TT = 0.30, 1.20          # governor/turbine time constants [s]
-KI = 0.03                    # ACE integral gain [1/s]
-K_TIE = 5.0                  # MW/rad
-DP_LOAD = 30.0               # MW at t=5 s in Area 1
+F0 = 50.0
+N = 8
+AREA = np.array([0,0,0,0,0,1,1,1])
 
+S = np.array([180,150,130,110,90, 170,130,100.], dtype=float)
+H = np.array([4.8,4.2,3.8,3.4,3.0, 4.5,3.7,3.1])
+R = np.array([0.040,0.045,0.050,0.055,0.060, 0.045,0.052,0.060])
+TG = np.array([0.22,0.28,0.35,0.42,0.50, 0.25,0.36,0.48])
+TT = np.array([0.8,1.0,1.2,1.4,1.6, 0.9,1.25,1.55])
+TR = np.array([4.0,5.0,6.0,7.5,9.0, 4.5,6.5,8.0])
+KTD = np.array([1.0,1.2,1.4,1.6,1.8, 1.1,1.45,1.8])
+RATE = np.array([0.14,0.12,0.10,0.09,0.08, 0.13,0.10,0.08])
+D = 0.2*S
+KSYNC = np.array([150,135,120,105,95, 145,120,100.])
+KI_AREA = np.array([0.018,0.015])
+B_AREA = np.array([20.0,20.0])
+K_TIE = 5.0
+DP_LOAD = 30.0
+T_END = 120.0
+MAX_STEP = 0.1
 
-def simulate(ki=KI):
-    n = 3 + 2*N1 + 1 + 2*N2 + 1
-    x0 = np.zeros(n)
+SAREA = np.array([S[AREA==a].sum() for a in (0,1)])
+ALPHA = S/np.array([SAREA[a] for a in AREA])
+W = H*S
+P0 = 0.5*S
 
-    def f(t, x):
-        i = 0
-        df1, df2, delta = x[i:i+3]; i += 3
-        g1 = x[i:i+N1]; i += N1
-        pm1 = x[i:i+N1]; i += N1
-        sec1 = x[i]; i += 1
-        g2 = x[i:i+N2]; i += N2
-        pm2 = x[i:i+N2]; i += N2
-        sec2 = x[i]
+def coi(x, a):
+    idx = AREA == a
+    return np.sum(W[idx]*x[idx])/np.sum(W[idx])
 
-        ptie = K_TIE*delta
-        load1 = DP_LOAD if t >= 5.0 else 0.0
-        ace1 = B1*df1 + ptie
-        ace2 = B2*df2 - ptie
+def rhs(t, y):
+    k = 0
+    theta = y[k:k+N]; k += N
+    df = y[k:k+N]; k += N
+    gate = y[k:k+N]; k += N
+    pm = y[k:k+N]; k += N
+    ztr = y[k:k+N]; k += N
+    xi = y[k:k+2]
 
-        cmd1 = (-KP1*df1 + sec1)/N1
-        cmd2 = (-KP2*df2 + sec2)/N2
-        dg1 = (cmd1-g1)/TG
-        dg2 = (cmd2-g2)/TG
-        dpm1 = (g1-pm1)/TT
-        dpm2 = (g2-pm2)/TT
+    theta_coi = np.array([coi(theta,0), coi(theta,1)])
+    df_coi = np.array([coi(df,0), coi(df,1)])
+    ptie = K_TIE*(theta_coi[0]-theta_coi[1])
 
-        ddf1 = (pm1.sum()-load1-ptie-D1*df1)/M1
-        ddf2 = (pm2.sum()+ptie-D2*df2)/M2
-        ddelta = 2*np.pi*(df1-df2)
-        dsec1 = -ki*ace1
-        dsec2 = -ki*ace2
-        return np.r_[ddf1, ddf2, ddelta, dg1, dpm1, dsec1, dg2, dpm2, dsec2]
+    dload = np.zeros(N)
+    if t >= 5.0:
+        dload[AREA==0] = DP_LOAD*ALPHA[AREA==0]
 
-    sol = solve_ivp(f, (0, 80), x0, rtol=1e-9, atol=1e-11,
-                    max_step=0.02, dense_output=True)
-    t = np.linspace(0, 80, 4001)
-    X = sol.sol(t)
-    df1, df2, delta = X[0], X[1], X[2]
-    ptie = K_TIE*delta
-    return t, X, F0+df1, F0+df2, ptie
+    pe = P0 + dload + KSYNC*(theta-theta_coi[AREA])
+    pe[AREA==0] += ALPHA[AREA==0]*ptie
+    pe[AREA==1] -= ALPHA[AREA==1]*ptie
 
+    ef = df/F0
+    ace = np.array([
+        B_AREA[0]*(df_coi[0]/F0) + ptie/SAREA[0],
+        B_AREA[1]*(df_coi[1]/F0) - ptie/SAREA[1]
+    ])
+
+    ucmd = 0.5 - ef/R - KTD*(ef-ztr) - KI_AREA[AREA]*xi[AREA]
+    dgate = np.clip((ucmd-gate)/TG, -RATE, RATE)
+
+    dpm = (S*gate-pm)/TT
+    dztr = (ef-ztr)/TR
+    ddf = F0/(2*H*S)*(pm-pe-D*df)
+    dtheta = 2*np.pi*df
+    dxi = ace
+
+    return np.r_[dtheta, ddf, dgate, dpm, dztr, dxi]
+
+def simulate():
+    y0 = np.r_[np.zeros(N), np.zeros(N), np.full(N,0.5), P0,
+               np.zeros(N), np.zeros(2)]
+    sol = solve_ivp(rhs, (0,T_END), y0, rtol=1e-7, atol=1e-9,
+                    max_step=MAX_STEP, dense_output=True)
+    t = np.arange(0,T_END+MAX_STEP/2,MAX_STEP)
+    Y = sol.sol(t)
+
+    theta = Y[0:N]
+    df = Y[N:2*N]
+    gate = Y[2*N:3*N]
+    pm = Y[3*N:4*N]
+    df_coi = np.vstack([
+        np.sum(W[AREA==a,None]*df[AREA==a],axis=0)/np.sum(W[AREA==a])
+        for a in (0,1)
+    ])
+    theta_coi = np.vstack([
+        np.sum(W[AREA==a,None]*theta[AREA==a],axis=0)/np.sum(W[AREA==a])
+        for a in (0,1)
+    ])
+    ptie = K_TIE*(theta_coi[0]-theta_coi[1])
+    return t, df, df_coi, ptie, gate, pm
 
 def main():
-    t, X, f1, f2, ptie = simulate(KI)
-    _, _, f1_noagc, f2_noagc, ptie_noagc = simulate(0.0)
+    t, df, df_coi, ptie, gate, pm = simulate()
     post = t >= 5.0
+    inter = np.zeros_like(df)
+    inter[:5] = df[:5]-df_coi[0]
+    inter[5:] = df[5:]-df_coi[1]
 
-    print(f"Area-1 nadir: {f1[post].min():.6f} Hz")
-    print(f"Area-2 nadir: {f2[post].min():.6f} Hz")
-    print(f"Peak |tie-line|: {np.abs(ptie[post]).max():.6f} MW")
-    print(f"Final f1/f2: {f1[-1]:.6f}, {f2[-1]:.6f} Hz")
-    print(f"Final tie-line: {ptie[-1]:.6f} MW")
-    print(f"Droop-only final f1/f2: {f1_noagc[-1]:.6f}, {f2_noagc[-1]:.6f} Hz")
-    print(f"Droop-only final tie-line: {ptie_noagc[-1]:.6f} MW")
+    metrics = {
+        "area1_COI_nadir_Hz": float(F0+df_coi[0,post].min()),
+        "area2_COI_nadir_Hz": float(F0+df_coi[1,post].min()),
+        "peak_abs_tie_line_MW": float(np.abs(ptie[post]).max()),
+        "final_area1_COI_Hz": float(F0+df_coi[0,-1]),
+        "final_area2_COI_Hz": float(F0+df_coi[1,-1]),
+        "final_tie_line_MW": float(ptie[-1]),
+        "max_area1_inter_machine_mHz": float(1000*np.abs(inter[:5,post]).max()),
+        "max_area2_inter_machine_mHz": float(1000*np.abs(inter[5:,post]).max()),
+    }
+    for k,v in metrics.items():
+        print(f"{k}: {v:.6f}")
 
-    pd.DataFrame({"time_s":t, "frequency1_Hz":f1,
-                  "frequency2_Hz":f2, "tie_line_MW":ptie}).to_csv(
-        "two_area_reference_results.csv", index=False)
+    data = {"time_s":t, "fCOI_area1_Hz":F0+df_coi[0],
+            "fCOI_area2_Hz":F0+df_coi[1], "tie_line_MW":ptie}
+    for i in range(N):
+        data[f"f_G{i+1}_Hz"] = F0+df[i]
+        data[f"df_inter_G{i+1}_mHz"] = 1000*inter[i]
+        data[f"gate_G{i+1}_pu"] = gate[i]
+        data[f"Pm_G{i+1}_MW"] = pm[i]
+    pd.DataFrame(data).to_csv("heterogeneous_two_area_results.csv",index=False)
 
-    plt.figure(figsize=(8,4.5))
-    plt.plot(t, f1, label="Area 1: 5 hydros")
-    plt.plot(t, f2, label="Area 2: 3 hydros")
-    plt.axhline(50, ls=":"); plt.axvline(5, ls="--")
-    plt.xlabel("Time [s]"); plt.ylabel("Frequency [Hz]")
+    pd.DataFrame({
+        "unit":[f"G{i+1}" for i in range(N)],
+        "area":[1 if a==0 else 2 for a in AREA],
+        "rating_MW":S, "H_s":H, "R_pu":R, "Tg_s":TG, "Tt_s":TT,
+        "transient_T_s":TR, "transient_gain":KTD,
+        "gate_rate_pu_s":RATE, "Ksync_MW_rad":KSYNC
+    }).to_csv("heterogeneous_unit_parameters.csv",index=False)
+
+    plt.figure(figsize=(9,5))
+    for i in range(5):
+        plt.plot(t,F0+df[i],label=f"G{i+1} ({S[i]:.0f} MW)")
+    plt.plot(t,F0+df_coi[0],lw=2.5,label="Area 1 COI")
+    plt.axvline(5,ls="--",lw=1); plt.xlabel("Time [s]"); plt.ylabel("Frequency [Hz]")
+    plt.grid(alpha=.3); plt.legend(ncol=2); plt.tight_layout()
+    plt.savefig("area1_individual_frequencies.svg"); plt.close()
+
+    plt.figure(figsize=(9,5))
+    for i in range(5,8):
+        plt.plot(t,F0+df[i],label=f"G{i+1} ({S[i]:.0f} MW)")
+    plt.plot(t,F0+df_coi[1],lw=2.5,label="Area 2 COI")
+    plt.axvline(5,ls="--",lw=1); plt.xlabel("Time [s]"); plt.ylabel("Frequency [Hz]")
     plt.grid(alpha=.3); plt.legend(); plt.tight_layout()
-    plt.savefig("frequency_response.svg"); plt.close()
+    plt.savefig("area2_individual_frequencies.svg"); plt.close()
 
-    plt.figure(figsize=(8,4.5))
-    plt.plot(t, ptie, label="Area 1 -> Area 2")
-    plt.axhline(0, ls=":"); plt.axvline(5, ls="--")
+    plt.figure(figsize=(9,5))
+    for i in range(N):
+        plt.plot(t,1000*inter[i],label=f"G{i+1}")
+    plt.axhline(0,ls=":",lw=1); plt.axvline(5,ls="--",lw=1)
+    plt.xlabel("Time [s]"); plt.ylabel(r"$f_i-f_{COI}$ [mHz]")
+    plt.grid(alpha=.3); plt.legend(ncol=2); plt.tight_layout()
+    plt.savefig("intermachine_frequency_deviation.svg"); plt.close()
+
+    plt.figure(figsize=(9,5))
+    plt.plot(t,F0+df_coi[0],label="Area 1 COI")
+    plt.plot(t,F0+df_coi[1],label="Area 2 COI")
+    plt.axhline(F0,ls=":",lw=1); plt.axvline(5,ls="--",lw=1)
+    plt.xlabel("Time [s]"); plt.ylabel("COI frequency [Hz]")
+    plt.grid(alpha=.3); plt.legend(); plt.tight_layout()
+    plt.savefig("heterogeneous_coi_frequency.svg"); plt.close()
+
+    plt.figure(figsize=(9,5))
+    plt.plot(t,ptie,label="Tie-line Area 1 -> Area 2")
+    plt.axhline(0,ls=":",lw=1); plt.axvline(5,ls="--",lw=1)
     plt.xlabel("Time [s]"); plt.ylabel("Tie-line power [MW]")
     plt.grid(alpha=.3); plt.legend(); plt.tight_layout()
-    plt.savefig("tie_line_power.svg"); plt.close()
+    plt.savefig("heterogeneous_tie_line.svg"); plt.close()
 
-    plt.figure(figsize=(8,4.5))
-    plt.plot(t, f1, label="ACE control")
-    plt.plot(t, f1_noagc, label="Droop only")
-    plt.axhline(50, ls=":"); plt.axvline(5, ls="--")
-    plt.xlabel("Time [s]"); plt.ylabel("Area-1 frequency [Hz]")
-    plt.grid(alpha=.3); plt.legend(); plt.tight_layout()
-    plt.savefig("ace_vs_droop.svg"); plt.close()
-
-if __name__ == "__main__":
+if __name__=="__main__":
     main()
