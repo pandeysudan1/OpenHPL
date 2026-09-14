@@ -11,6 +11,7 @@ PowerSystemSimple
 AGC_SMIB
 AGC_Trollheim
 AGC_Trollheim_Surgetank
+TwoAreaAGC
 VolumeFlowSource
 Gate
 Pipes
