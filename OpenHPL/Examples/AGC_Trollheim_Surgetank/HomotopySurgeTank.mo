@@ -38,8 +38,11 @@ protected
 
 initial equation
   if SteadyState then
+    // A steady open surge tank has no net branch flow. Stating this directly is
+    // more robust than imposing der(m)=0 through a derivative alias.
+    Vdot=0;
+    // The remaining surge level is solved from the steady momentum balance.
     der(M)=0;
-    der(m)=0;
   else
     h=h_0;
     Vdot=Vdot_0;
@@ -64,8 +67,8 @@ equation
   F_f_actual=OpenHPL.Functions.DarcyFriction.Friction(v,D,l,data.rho,data.mu,p_eps);
   F_f_linear=k_fric*v;
 
-  // λ=0: hydrostatic pressure balance plus linear damping.
-  // λ=1: full nonlinear momentum balance, including convective momentum and Darcy friction.
+  // lambda=0: hydrostatic pressure balance plus linear damping.
+  // lambda=1: full nonlinear momentum balance, including convective momentum and Darcy friction.
   der(M)=homotopy(
     actual=mdot*v + F_p - F_f_actual - F_g,
     simplified=F_p - F_f_linear - F_g);
@@ -74,8 +77,8 @@ equation
 
   annotation(Documentation(info="<html>
 <h4>Homotopy-assisted surge tank</h4>
-<p>This model is intentionally local to the AGC_Trollheim_Surgetank benchmark so the base OpenHPL SurgeTank remains unchanged.</p>
-<p>The existing surge-tank model fixes Vdot during initialization while also imposing steady-state mass balance. Here Vdot is left free during steady-state initialization and the nonlinear momentum equation is wrapped in Modelica homotopy().</p>
-<p>At lambda=0 the solver sees a hydrostatic pressure balance with linearized friction. At lambda=1 the complete nonlinear momentum equation is recovered.</p>
+<p>This benchmark-local component leaves the base OpenHPL SurgeTank unchanged.</p>
+<p>During steady-state initialization the physical surge condition is imposed directly as Vdot=0, while der(M)=0 lets the solver determine the equilibrium water level. This avoids the derivative-alias inconsistency observed when der(m)=0 was used as an initialization equation.</p>
+<p>The nonlinear momentum equation is wrapped in Modelica homotopy(). At lambda=0 the solver sees hydrostatic balance with linearized friction; at lambda=1 the complete nonlinear momentum equation is recovered.</p>
 </html>"));
 end HomotopySurgeTank;
