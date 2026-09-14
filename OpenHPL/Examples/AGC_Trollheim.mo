@@ -29,9 +29,9 @@ model AGC_Trollheim "Trollheim HPP AGC benchmark: 75 MW to 90 MW load step at t=
     H=80,
     L=80,
     D=4,
-    h_0=40,
+    h_0=50,
     Vdot_0=0,
-    SteadyState=true) annotation (Placement(transformation(extent={{-46,46},{-26,66}})));
+    SteadyState=false) annotation (Placement(transformation(extent={{-46,46},{-26,66}})));
 
   OpenHPL.Waterway.Pipe penstock(
     H=300,
@@ -125,5 +125,5 @@ initial equation
 
   annotation (
     experiment(StartTime=0, StopTime=65, Tolerance=1e-7, Interval=0.02),
-    Documentation(info="<html><h4>AGC_Trollheim</h4><p>OpenHPL benchmark derived from the Trollheim parameter set used in the user's HydroSyncBridge.jl work. Initial loading is 75 MW (50% of 150 MW). At t=5 s the load increases by 15 MW to 90 MW (60%). The nonlinear hydraulic path includes intake, surge tank, penstock, turbine and discharge. A simple generator, mechanical grid equivalent and droop-plus-integral AGC governor close the frequency-control loop.</p><p>The hydraulic geometry and machine rating are transferred benchmark values and should not be interpreted as independently field-verified Trollheim plant data.</p></html>"));
+    Documentation(info="<html><h4>AGC_Trollheim</h4><p>OpenHPL benchmark derived from the Trollheim parameter set used in the user's HydroSyncBridge.jl work. Initial loading is 75 MW (50% of 150 MW). At t=5 s the load increases by 15 MW to 90 MW (60%). The nonlinear hydraulic path includes intake, surge tank, penstock, turbine and discharge. A simple generator, mechanical grid equivalent and droop-plus-integral AGC governor close the frequency-control loop.</p><p>The hydraulic geometry and machine rating are transferred benchmark values and should not be interpreted as independently field-verified Trollheim plant data. The surge tank uses seeded initialization (h=50 m, Vdot=0) to avoid the nonlinear steady-state algebraic loop; the 0-5 s forensic drift is used to judge and tune consistency.</p></html>"));
 end AGC_Trollheim;
