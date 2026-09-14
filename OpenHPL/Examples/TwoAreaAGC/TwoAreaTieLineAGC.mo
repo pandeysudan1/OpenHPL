@@ -12,7 +12,7 @@ model TwoAreaTieLineAGC
   final parameter SI.Power Pbase1=n1*P_unit;
   final parameter SI.Power Pbase2=n2*P_unit;
 
-  parameter Real K_tie(unit="W/rad")=25e6
+  parameter Real K_tie(unit="W/rad")=5e6
     "Synchronizing coefficient of the AC tie line";
   parameter Real B1=20 "Area-1 frequency bias in pu ACE / pu frequency";
   parameter Real B2=20 "Area-2 frequency bias in pu ACE / pu frequency";
@@ -20,9 +20,9 @@ model TwoAreaTieLineAGC
 
   block TieLineGovernor
     "Primary droop plus distributed secondary ACE integral control"
-    parameter Real R=0.50 "Droop [pu frequency / pu gate]";
+    parameter Real R=0.05 "Droop [pu frequency / pu gate]";
     parameter SI.Time T_g=0.30 "Guide-vane servomotor time constant";
-    parameter Real K_i(unit="1/s")=0.12 "ACE integral gain";
+    parameter Real K_i(unit="1/s")=0.03 "ACE integral gain";
     parameter Real alpha=1 "Area participation factor";
     parameter SI.PerUnit u_bias=0.50;
     parameter SI.PerUnit u_min=0.05;
@@ -56,7 +56,7 @@ model TwoAreaTieLineAGC
   OpenHPL.Waterway.Pipe discharge1[n1](each H=2,each L=600,each D_i=6,each D_o=6);
   OpenHPL.Waterway.Reservoir tail1[n1](each h_0=5);
   OpenHPL.ElectroMech.Generators.SimpleGen generator1[n1](each Pmax=P_unit,each J=J_each,each p=p,each Ploss=0,each enable_f=true);
-  TieLineGovernor governor1[n1](each R=0.50,each T_g=0.30,each K_i=0.12,each alpha=1.0/n1);
+  TieLineGovernor governor1[n1](each R=0.05,each T_g=0.30,each K_i=0.03,each alpha=1.0/n1);
 
   OpenHPL.Waterway.Reservoir reservoir2[n2](each h_0=50,each fixElevation=true,each z_0=322);
   OpenHPL.Waterway.Pipe intake2[n2](each H=20,each L=500,each D_i=6,each D_o=6);
@@ -65,7 +65,7 @@ model TwoAreaTieLineAGC
   OpenHPL.Waterway.Pipe discharge2[n2](each H=2,each L=600,each D_i=6,each D_o=6);
   OpenHPL.Waterway.Reservoir tail2[n2](each h_0=5);
   OpenHPL.ElectroMech.Generators.SimpleGen generator2[n2](each Pmax=P_unit,each J=J_each,each p=p,each Ploss=0,each enable_f=true);
-  TieLineGovernor governor2[n2](each R=0.50,each T_g=0.30,each K_i=0.12,each alpha=1.0/n2);
+  TieLineGovernor governor2[n2](each R=0.05,each T_g=0.30,each K_i=0.03,each alpha=1.0/n2);
 
   OpenHPL.ElectroMech.PowerSystem.Grid grid1(Pgrid=Pbase1,useLambda=true,Lambda=0,mu=0,J=1,p=p,enable_f=true);
   OpenHPL.ElectroMech.PowerSystem.Grid grid2(Pgrid=Pbase2,useLambda=true,Lambda=0,mu=0,J=1,p=p,enable_f=true);
