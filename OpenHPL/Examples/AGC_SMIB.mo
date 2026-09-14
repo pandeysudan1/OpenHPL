@@ -82,7 +82,7 @@ model AGC_SMIB "Hydropower LFC/AGC benchmark: 50% to 60% load step at t=5 s"
   output SI.Power mechanicalPower "Turbine shaft power";
   output SI.Power electricalLoad "Applied electrical load";
   output SI.PerUnit guideVane "Guide-vane opening";
-  output SI.VolumeFlowRate flow "Turbine flow";
+  output SI.VolumeFlowRate turbineFlow "Turbine volumetric flow";
 
 equation
   connect(reservoir.o,intake.i);
@@ -102,7 +102,7 @@ equation
   mechanicalPower = turbine.Wdot_s;
   electricalLoad = loadStep.y;
   guideVane = governor.gate;
-  flow = turbine.Vdot;
+  turbineFlow = turbine.Vdot;
 
   annotation (
     experiment(StartTime=0, StopTime=65, Tolerance=1e-7, Interval=0.02),
