@@ -18,8 +18,12 @@ model TrollheimAGCSurgeTank "Trollheim AGC benchmark with homotopy-assisted surg
     enable_nomSpeed=false,enable_P_out=true);
   OpenHPL.Waterway.Pipe discharge(H=2,L=600,D_i=6,D_o=6,SteadyState=true);
   OpenHPL.Waterway.Reservoir tail(h_0=5);
-  OpenHPL.ElectroMech.Generators.SimpleGen generator(Pmax=P_base,J=J_each,p=p,Ploss=0,enable_f=true);
-  OpenHPL.ElectroMech.PowerSystem.Grid grid(Pgrid=P_base,useLambda=true,Lambda=0,mu=0,J=1,p=p,enable_f=true);
+  OpenHPL.ElectroMech.Generators.SimpleGen generator(
+    Pmax=P_base,J=J_each,p=p,Ploss=0,enable_f=true,
+    fixed_iniSpeed=false);
+  OpenHPL.ElectroMech.PowerSystem.Grid grid(
+    Pgrid=P_base,useLambda=true,Lambda=0,mu=0,J=1,p=p,enable_f=true,
+    fixed_iniSpeed=true);
 
   InitializedGovernorAGC governor(
     R=0.50,
@@ -68,5 +72,5 @@ initial equation
 
   annotation(
     experiment(StartTime=0,StopTime=65,Tolerance=1e-7,Interval=0.02),
-    Documentation(info="<html><h4>AGC Trollheim with surge tank</h4><p>The surge-tank momentum equation uses Modelica homotopy() and the controller states are anchored to a nearby validated 75 MW operating point during initialization. The load changes from 75 MW to 90 MW at t=5 s.</p></html>"));
+    Documentation(info="<html><h4>AGC Trollheim with surge tank</h4><p>The surge-tank momentum equation uses Modelica homotopy(). The AGC controller is anchored to a nearby 75 MW operating point and exactly one mechanically connected unit (the Grid model) fixes the initial shaft speed to nominal, as intended by OpenHPL Power2Torque.fixed_iniSpeed. The generator derivative condition then enforces initial torque balance. The load changes from 75 MW to 90 MW at t=5 s.</p></html>"));
 end TrollheimAGCSurgeTank;
