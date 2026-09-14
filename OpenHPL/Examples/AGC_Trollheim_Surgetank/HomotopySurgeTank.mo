@@ -9,12 +9,13 @@ model HomotopySurgeTank "Simple surge tank with homotopy-assisted steady-state i
   parameter SI.Diameter D=4 "Surge shaft diameter";
   parameter Boolean SteadyState=data.SteadyState "Use steady-state initialization";
   parameter SI.Height h_0=50 "Initial water level above surge inlet";
-  parameter SI.VolumeFlowRate Vdot_0=0 "Start guess for surge flow";
+  parameter SI.VolumeFlowRate Vdot_0=0 "Initial surge flow";
   parameter SI.VolumeFlowRate Vdot_hom=1
     "Reference surge flow used to linearize friction in the simplified homotopy system";
 
   SI.Height h(start=h_0, fixed=false) "Surge water height";
-  SI.VolumeFlowRate Vdot(start=Vdot_0, fixed=false) "Surge branch volume flow";
+  SI.VolumeFlowRate Vdot(start=Vdot_0, fixed=SteadyState)
+    "Surge branch volume flow; fixed to Vdot_0 for steady-state initialization";
   SI.Velocity v "Surge water velocity";
   SI.MassFlowRate mdot "Surge mass flow";
   SI.Mass m "Water mass";
@@ -38,10 +39,8 @@ protected
 
 initial equation
   if SteadyState then
-    // A steady open surge tank has no net branch flow. Stating this directly is
-    // more robust than imposing der(m)=0 through a derivative alias.
-    Vdot=0;
-    // The remaining surge level is solved from the steady momentum balance.
+    // Vdot is already fixed to Vdot_0=0 through its fixed start attribute.
+    // Solve only the remaining steady momentum balance for the surge level.
     der(M)=0;
   else
     h=h_0;
@@ -67,8 +66,6 @@ equation
   F_f_actual=OpenHPL.Functions.DarcyFriction.Friction(v,D,l,data.rho,data.mu,p_eps);
   F_f_linear=k_fric*v;
 
-  // lambda=0: hydrostatic pressure balance plus linear damping.
-  // lambda=1: full nonlinear momentum balance, including convective momentum and Darcy friction.
   der(M)=homotopy(
     actual=mdot*v + F_p - F_f_actual - F_g,
     simplified=F_p - F_f_linear - F_g);
@@ -78,7 +75,7 @@ equation
   annotation(Documentation(info="<html>
 <h4>Homotopy-assisted surge tank</h4>
 <p>This benchmark-local component leaves the base OpenHPL SurgeTank unchanged.</p>
-<p>During steady-state initialization the physical surge condition is imposed directly as Vdot=0, while der(M)=0 lets the solver determine the equilibrium water level. This avoids the derivative-alias inconsistency observed when der(m)=0 was used as an initialization equation.</p>
-<p>The nonlinear momentum equation is wrapped in Modelica homotopy(). At lambda=0 the solver sees hydrostatic balance with linearized friction; at lambda=1 the complete nonlinear momentum equation is recovered.</p>
+<p>For steady initialization the branch-flow state is fixed directly at Vdot_0=0 through the state attribute, while der(M)=0 determines the equilibrium surge level. This avoids both the original redundant der(m)=0 constraint and the post-homotopy consistency mismatch observed when Vdot=0 was supplied as a separate initial equation.</p>
+<p>The momentum equation uses Modelica homotopy(): lambda=0 gives hydrostatic balance with linearized friction; lambda=1 restores the full nonlinear convective/Darcy momentum equation.</p>
 </html>"));
 end HomotopySurgeTank;
