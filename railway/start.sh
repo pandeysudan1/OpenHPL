@@ -21,6 +21,6 @@ for cell in nb.get('cells',[]):
             print(''.join(out.get('text',[])), end='')
 PY
 echo "=== STARTING JUPYTER ==="
-exec jupyter lab --ip=0.0.0.0 --port="${PORT:-8888}" --no-browser \
-  --ServerApp.token="${JUPYTER_TOKEN:-}" --ServerApp.password="" \
-  --ServerApp.allow_origin="*" --ServerApp.root_dir=/workspace
+exec jupyter lab --allow-root --ip=0.0.0.0 --port="${PORT:-8888}" --no-browser \
+  --IdentityProvider.token="${JUPYTER_TOKEN:?JUPYTER_TOKEN must be set}" \
+  --ServerApp.password="" --ServerApp.root_dir=/workspace
