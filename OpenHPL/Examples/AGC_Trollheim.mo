@@ -17,7 +17,7 @@ model AGC_Trollheim "Trollheim HPP AGC benchmark: 75 MW to 90 MW load step at t=
   OpenHPL.Waterway.Reservoir tail(h_0=5);
   OpenHPL.ElectroMech.Generators.SimpleGen generator(Pmax=P_base,J=J_each,p=p,Ploss=0,enable_f=true);
   OpenHPL.ElectroMech.PowerSystem.Grid grid(Pgrid=P_base,useLambda=true,Lambda=0,mu=0,J=1,p=p,enable_f=true);
-  OpenHPL.ElectroMech.PowerSystem.SimpleGovernorAGC governor(R=0.50,T_g=0.30,K_i=0.05,u_bias=0.50,u_min=0.05,u_max=1.0);
+  OpenHPL.ElectroMech.PowerSystem.SimpleGovernorAGC governor(R=0.50,T_g=0.30,K_i=0.10,u_bias=0.50,u_min=0.05,u_max=1.0);
   Modelica.Blocks.Sources.Step loadStep(offset=0.50*P_base,height=0.10*P_base,startTime=5);
   Modelica.Blocks.Sources.Constant zeroPower(k=0);
 
@@ -49,5 +49,5 @@ initial equation
   der(generator.inertia.w)=0;
 
   annotation(experiment(StartTime=0,StopTime=65,Tolerance=1e-7,Interval=0.02),
-    Documentation(info="<html><h4>AGC_Trollheim</h4><p>Trollheim-inspired 150 MW nonlinear hydro frequency-control benchmark. Load steps from 75 MW to 90 MW at t=5 s. The validated hydraulic backbone is reservoir, intake, penstock, turbine, discharge and tailrace. The current conservative tuning R=50% and Ki=0.05 1/s is being used to establish a stable hydro-governor baseline before increasing secondary-control authority. A surge-tank version is documented separately as a next-fidelity warm-start problem.</p></html>"));
+    Documentation(info="<html><h4>AGC_Trollheim</h4><p>Trollheim-inspired 150 MW nonlinear hydro frequency-control benchmark. Load steps from 75 MW to 90 MW at t=5 s. The hydraulic backbone is reservoir, intake, penstock, turbine, discharge and tailrace. The controller uses R=50% and Ki=0.10 1/s, selected after first establishing a stable hydro-governor baseline at Ki=0.05 1/s. A surge-tank version is documented separately as a next-fidelity warm-start problem.</p></html>"));
 end AGC_Trollheim;
