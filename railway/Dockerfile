@@ -6,9 +6,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m pip install --no-cache-dir \
-    jupyterlab nbconvert pandas matplotlib OMPython
+    jupyterlab nbconvert pandas matplotlib scipy OMPython
 
-# Install Modelica Standard Library 4.0.0 into OpenModelica's package store.
 RUN printf 'updatePackageIndex();\ninstallPackage(Modelica, "4.0.0", exactMatch=false);\ngetErrorString();\n' > /tmp/install_msl.mos \
     && omc /tmp/install_msl.mos \
     && rm -f /tmp/install_msl.mos
