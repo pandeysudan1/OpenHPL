@@ -84,6 +84,9 @@ model AGC_SMIB "Hydropower LFC/AGC benchmark: 50% to 60% load step at t=5 s"
   output SI.PerUnit guideVane "Guide-vane opening";
   output SI.VolumeFlowRate turbineFlow "Turbine volumetric flow";
 
+initial equation
+  der(generator.inertia.w)=0 "Enforce exact electromechanical steady state before the load step";
+
 equation
   connect(reservoir.o,intake.i);
   connect(intake.o,penstock.i);
