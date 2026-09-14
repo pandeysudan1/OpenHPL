@@ -13,9 +13,6 @@ model HomotopySurgeTank "Simple surge tank with homotopy-assisted steady-state i
   parameter SI.VolumeFlowRate Vdot_hom=1
     "Reference surge flow used to linearize friction in the simplified homotopy system";
 
-  SI.Area A=(C.pi*D^2)/4 "Cross-sectional area";
-  Real cos_theta=H/L "Slope ratio";
-  SI.Length l=h/cos_theta "Water-column length";
   SI.Height h(start=h_0, fixed=false) "Surge water height";
   SI.VolumeFlowRate Vdot(start=Vdot_0, fixed=false) "Surge branch volume flow";
   SI.Velocity v "Surge water velocity";
@@ -29,11 +26,15 @@ model HomotopySurgeTank "Simple surge tank with homotopy-assisted steady-state i
   SI.Pressure p_b "Bottom/manifold pressure";
 
 protected
-  parameter SI.Velocity v_hom=max(abs(Vdot_hom)/A,1e-4)
+  parameter SI.Area A=(C.pi*D^2)/4 "Cross-sectional area";
+  parameter Real cos_theta=H/L "Slope ratio";
+  parameter SI.Velocity v_hom=
+    if abs(Vdot_hom)/A > 1e-4 then abs(Vdot_hom)/A else 1e-4
     "Velocity used for linear-friction slope";
   parameter Real k_fric(unit="kg/s")=
     abs(OpenHPL.Functions.DarcyFriction.Friction(v_hom,D,L,data.rho,data.mu,p_eps))/v_hom
     "Linear friction slope matched to nonlinear friction at v_hom";
+  SI.Length l=h/cos_theta "Water-column length";
 
 initial equation
   if SteadyState then
