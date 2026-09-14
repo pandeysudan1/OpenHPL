@@ -8,6 +8,7 @@ SimpleGenFrancis
 DetailedGen
 DetailedGenFrancis
 PowerSystemSimple
+AGC_SMIB
 VolumeFlowSource
 Gate
 Pipes
