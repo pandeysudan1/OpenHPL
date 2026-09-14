@@ -298,7 +298,28 @@ These numbers come from `two_area_reference.py`, which now contains eight indepe
 
 Area 1 experiences the direct disturbance and therefore has the deeper initial nadir. Area 2 follows through the tie-line, but its first excursion is smaller.
 
-## 6.2 Inter-machine oscillation
+## 6.2 Area 1: all generator frequencies and Area-1 COI
+
+![Area 1 all generator frequencies plus COI](results/area1_all_generators_plus_coi.svg)
+
+This plot overlays `G1 ... G5` with the inertia-weighted Area-1 COI frequency. The black COI trajectory is the bulk area motion; the small separation between the individual machine traces represents the local inter-machine component. Because the disturbance is applied in Area 1, this is where the largest machine-to-machine separation appears.
+
+## 6.3 Area 2: all generator frequencies and Area-2 COI
+
+![Area 2 all generator frequencies plus COI](results/area2_all_generators_plus_coi.svg)
+
+This plot overlays `G6 ... G8` with the Area-2 COI frequency. Area 2 is disturbed only through the tie line, so its generators remain much more coherent than the Area-1 machines.
+
+**For direct visual comparison, the Area-1 and Area-2 plots use exactly the same frequency axis:**
+
+```text
+ymin = 49.86 Hz
+ymax = 50.01 Hz
+```
+
+The Area-2 plot is therefore intentionally not re-zoomed. Its visibly smaller spread is a physical result of this benchmark rather than a plotting artifact.
+
+## 6.4 Inter-machine oscillation
 
 ![Inter-machine frequency components](results/intermachine_frequency_deviation.svg)
 
@@ -375,6 +396,8 @@ OpenHPL/Examples/TwoAreaAGC/
 ├── two_area_reference.py
 └── results/
     ├── heterogeneous_coi_frequency.svg
+    ├── area1_all_generators_plus_coi.svg
+    ├── area2_all_generators_plus_coi.svg
     ├── intermachine_frequency_deviation.svg
     ├── frequency_response.svg
     └── tie_line_power.svg
