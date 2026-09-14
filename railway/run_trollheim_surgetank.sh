@@ -24,8 +24,21 @@ EOF
 echo "=== DIRECT HOMOTOPY INITIALIZATION TEST ==="
 omc run_trollheim_surgetank_direct.mos 2>&1 | tee /workspace/results/omc_agc_trollheim_surgetank_direct.log || true
 DIRECT_CSV=$(find /workspace/run -maxdepth 1 -name '*TrollheimAGCSurgeTank_res.csv' -type f -size +0c | head -1)
+DIRECT_OK=0
 if [ -n "$DIRECT_CSV" ]; then
   cp "$DIRECT_CSV" /workspace/results/AGC_Trollheim_Surgetank_direct_res.csv
+  DIRECT_OK=$(python3 - <<'PY'
+import pandas as pd
+try:
+    df=pd.read_csv('/workspace/results/AGC_Trollheim_Surgetank_direct_res.csv')
+    print(1 if len(df)>10 and float(df.time.max())>=64.99 else 0)
+except Exception:
+    print(0)
+PY
+)
+fi
+
+if [ "$DIRECT_OK" = "1" ]; then
   echo "DIRECT_HOMOTOPY_RESULT=PASS"
   python3 - <<'PY'
 import pandas as pd
@@ -35,6 +48,7 @@ pre=df[df.time<5]; post=df[df.time>=5]; i=post.frequency_Hz.idxmin()
 print('DIRECT_PRE_f_range_Hz=',float(pre.frequency_Hz.max()-pre.frequency_Hz.min()))
 print('DIRECT_PRE_Pm_range_MW=',float((pre.mechanicalPower.max()-pre.mechanicalPower.min())/1e6))
 print('DIRECT_PRE_level_range_m=',float(pre.surgeLevel.max()-pre.surgeLevel.min()))
+print('DIRECT_PRE_surgeFlow_range_m3s=',float(pre.surgeFlow.max()-pre.surgeFlow.min()))
 print('DIRECT_NADIR_Hz=',float(df.loc[i,'frequency_Hz']))
 print('DIRECT_NADIR_time_s=',float(df.loc[i,'time']))
 print('DIRECT_FINAL_f_Hz=',float(df.iloc[-1].frequency_Hz))
