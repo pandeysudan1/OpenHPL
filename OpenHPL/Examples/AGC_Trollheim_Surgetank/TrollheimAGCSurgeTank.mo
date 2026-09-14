@@ -7,90 +7,30 @@ model TrollheimAGCSurgeTank "Trollheim AGC benchmark with homotopy-assisted surg
   parameter SI.MomentOfInertia J_total=2e5 "Transferred Trollheim rotor inertia benchmark";
   final parameter SI.MomentOfInertia J_each=J_total/2;
 
-  inner OpenHPL.Data data(
-    SteadyState=true,
-    f_grid=50,
-    f_0=1,
-    Vdot_0=25);
-
-  OpenHPL.Waterway.Reservoir reservoir(
-    h_0=50,
-    fixElevation=true,
-    z_0=322);
-
-  OpenHPL.Waterway.Pipe intake(
-    H=20,
-    L=500,
-    D_i=6,
-    D_o=6,
-    SteadyState=true);
-
-  HomotopySurgeTank surgeTank(
-    H=80,
-    L=80,
-    D=4,
-    h_0=50,
-    Vdot_0=0,
-    Vdot_hom=1,
-    SteadyState=true);
-
-  OpenHPL.Waterway.Pipe penstock(
-    H=300,
-    L=500,
-    D_i=4,
-    D_o=4,
-    SteadyState=true);
-
+  inner OpenHPL.Data data(SteadyState=true,f_grid=50,f_0=1,Vdot_0=25);
+  OpenHPL.Waterway.Reservoir reservoir(h_0=50,fixElevation=true,z_0=322);
+  OpenHPL.Waterway.Pipe intake(H=20,L=500,D_i=6,D_o=6,SteadyState=true);
+  HomotopySurgeTank surgeTank(H=80,L=80,D=4,h_0=50,Vdot_0=0,Vdot_hom=1,SteadyState=true);
+  OpenHPL.Waterway.Pipe penstock(H=300,L=500,D_i=4,D_o=4,SteadyState=true);
   OpenHPL.ElectroMech.Turbines.Turbine turbine(
-    ValveCapacity=false,
-    H_n=340,
-    Vdot_n=50,
-    u_n=1,
-    ConstEfficiency=true,
-    eta_h=0.90,
-    Pmax=P_base,
-    J=J_each,
-    p=p,
-    enable_nomSpeed=false,
-    enable_P_out=true);
-
-  OpenHPL.Waterway.Pipe discharge(
-    H=2,
-    L=600,
-    D_i=6,
-    D_o=6,
-    SteadyState=true);
-
+    ValveCapacity=false,H_n=340,Vdot_n=50,u_n=1,
+    ConstEfficiency=true,eta_h=0.90,Pmax=P_base,J=J_each,p=p,
+    enable_nomSpeed=false,enable_P_out=true);
+  OpenHPL.Waterway.Pipe discharge(H=2,L=600,D_i=6,D_o=6,SteadyState=true);
   OpenHPL.Waterway.Reservoir tail(h_0=5);
+  OpenHPL.ElectroMech.Generators.SimpleGen generator(Pmax=P_base,J=J_each,p=p,Ploss=0,enable_f=true);
+  OpenHPL.ElectroMech.PowerSystem.Grid grid(Pgrid=P_base,useLambda=true,Lambda=0,mu=0,J=1,p=p,enable_f=true);
 
-  OpenHPL.ElectroMech.Generators.SimpleGen generator(
-    Pmax=P_base,
-    J=J_each,
-    p=p,
-    Ploss=0,
-    enable_f=true);
-
-  OpenHPL.ElectroMech.PowerSystem.Grid grid(
-    Pgrid=P_base,
-    useLambda=true,
-    Lambda=0,
-    mu=0,
-    J=1,
-    p=p,
-    enable_f=true);
-
-  OpenHPL.ElectroMech.PowerSystem.SimpleGovernorAGC governor(
+  InitializedGovernorAGC governor(
     R=0.50,
     T_g=0.30,
     K_i=0.10,
     u_bias=0.50,
+    u_init=0.44634,
     u_min=0.05,
     u_max=1.0);
 
-  Modelica.Blocks.Sources.Step loadStep(
-    offset=0.50*P_base,
-    height=0.10*P_base,
-    startTime=5);
+  Modelica.Blocks.Sources.Step loadStep(offset=0.50*P_base,height=0.10*P_base,startTime=5);
   Modelica.Blocks.Sources.Constant zeroPower(k=0);
 
   output SI.Frequency frequency_Hz "Generator/grid frequency";
@@ -108,7 +48,6 @@ equation
   connect(penstock.o,turbine.i);
   connect(turbine.o,discharge.i);
   connect(discharge.o,tail.o);
-
   connect(turbine.flange,generator.flange);
   connect(generator.flange,grid.flange);
   connect(zeroPower.y,generator.Pload);
@@ -129,8 +68,5 @@ initial equation
 
   annotation(
     experiment(StartTime=0,StopTime=65,Tolerance=1e-7,Interval=0.02),
-    Documentation(info="<html><h4>AGC Trollheim with surge tank</h4>
-<p>This benchmark adds a homotopy-assisted surge tank to the validated Trollheim AGC case. The load changes from 75 MW to 90 MW at t=5 s.</p>
-<p>The surge-tank steady-state initialization uses a simplified hydrostatic/linear-friction system at lambda=0 and continuously transforms to the full nonlinear momentum balance at lambda=1.</p>
-</html>"));
+    Documentation(info="<html><h4>AGC Trollheim with surge tank</h4><p>The surge-tank momentum equation uses Modelica homotopy() and the controller states are anchored to a nearby validated 75 MW operating point during initialization. The load changes from 75 MW to 90 MW at t=5 s.</p></html>"));
 end TrollheimAGCSurgeTank;
