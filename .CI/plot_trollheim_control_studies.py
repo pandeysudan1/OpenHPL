@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create reproducible SVG plots and summary metrics from OpenModelica CSV files."""
+"""Create reproducible SVG plots and metrics from OpenModelica CSV files."""
 
 from __future__ import annotations
 
@@ -90,11 +90,50 @@ def main() -> None:
     fig.savefig(args.output_dir / "agc_component_response.svg")
     plt.close(fig)
 
+    two_area = read_case(args.input_dir / "trollheim_tieline_res.csv")
+    time = series(two_area, "time")
+    f1 = [50.0 * (1.0 + x) for x in series(two_area, "frequencyDeviation1")]
+    f2 = [50.0 * (1.0 + x) for x in series(two_area, "frequencyDeviation2")]
+    tie = series(two_area, "tiePowerDeviation")
+    ace1 = series(two_area, "areaControlError1")
+    ace2 = series(two_area, "areaControlError2")
+    fig, axes = plt.subplots(3, 1, figsize=(8.2, 7.5), sharex=True)
+    axes[0].plot(time, f1, label="Area 1")
+    axes[0].plot(time, f2, label="Area 2")
+    axes[0].set_ylabel("Frequency (Hz)")
+    axes[0].legend()
+    axes[1].plot(time, tie, color="#9467bd")
+    axes[1].axhline(0.0, color="0.6", linewidth=0.8)
+    axes[1].set_ylabel("Tie-line power (pu)")
+    axes[2].plot(time, ace1, label="ACE area 1")
+    axes[2].plot(time, ace2, label="ACE area 2")
+    axes[2].set(xlabel="Time (s)", ylabel="ACE (pu)")
+    axes[2].legend()
+    for ax in axes:
+        ax.axvline(5.0, color="0.35", linestyle="--", linewidth=1.0)
+        ax.grid(True, alpha=0.25)
+    fig.suptitle("Two-area AGC and tie-line response")
+    fig.tight_layout()
+    fig.savefig(args.output_dir / "two_area_tieline_response.svg")
+    plt.close(fig)
+
     with (args.output_dir / "metrics.csv").open("w", newline="", encoding="utf-8") as stream:
         writer = csv.writer(stream)
         writer.writerow(["controller", "frequency_nadir_hz", "final_frequency_hz"])
         writer.writerows((label, f"{nadir:.6f}", f"{final:.6f}")
                          for label, nadir, final in metrics)
+
+    tail = max(1, len(time) // 10)
+    with (args.output_dir / "tie_line_metrics.csv").open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(["area1_nadir_hz", "area2_nadir_hz",
+                         "area1_final_hz", "area2_final_hz", "final_tie_power_pu"])
+        writer.writerow([
+            f"{min(f1):.6f}", f"{min(f2):.6f}",
+            f"{sum(f1[-tail:]) / tail:.6f}",
+            f"{sum(f2[-tail:]) / tail:.6f}",
+            f"{sum(tie[-tail:]) / tail:.6f}",
+        ])
 
 
 if __name__ == "__main__":

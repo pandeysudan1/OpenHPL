@@ -47,6 +47,7 @@ jobs:
           test -s simulation-results/trollheim_isochronous_res.csv
           test -s simulation-results/trollheim_droop_res.csv
           test -s simulation-results/trollheim_agc_res.csv
+          test -s simulation-results/trollheim_tieline_res.csv
 
       - name: Prepare generated files
         if: always()

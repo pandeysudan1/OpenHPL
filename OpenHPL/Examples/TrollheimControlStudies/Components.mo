@@ -90,4 +90,34 @@ package Components "Equation-based component models"
     der(secondaryCommand) = -K_i*B*frequencyDeviation;
     command = -frequencyDeviation/R + secondaryCommand;
   end AGCController;
+
+  block TieLine
+    parameter Real T_12=0.07 "Synchronizing coefficient";
+    Modelica.Blocks.Interfaces.RealInput frequencyDeviation1;
+    Modelica.Blocks.Interfaces.RealInput frequencyDeviation2;
+    Modelica.Blocks.Interfaces.RealOutput tiePowerDeviation;
+  protected
+    Real pTie(start=0, fixed=true);
+  equation
+    der(pTie) = 2*Modelica.Constants.pi*T_12*
+      (frequencyDeviation1 - frequencyDeviation2);
+    tiePowerDeviation = pTie;
+  end TieLine;
+
+  block TieLineAGC
+    parameter Real R=0.05 "Primary droop";
+    parameter Real B=1.0 "Frequency-bias factor";
+    parameter Real K_i=0.80 "Secondary integral gain";
+    parameter Real tieSign=1.0 "Positive for export, negative for import";
+    Modelica.Blocks.Interfaces.RealInput frequencyDeviation;
+    Modelica.Blocks.Interfaces.RealInput tieLinePower;
+    Modelica.Blocks.Interfaces.RealOutput command;
+    Modelica.Blocks.Interfaces.RealOutput areaControlError;
+  protected
+    Real secondaryCommand(start=0, fixed=true);
+  equation
+    areaControlError = B*frequencyDeviation + tieSign*tieLinePower;
+    der(secondaryCommand) = -K_i*areaControlError;
+    command = -frequencyDeviation/R + secondaryCommand;
+  end TieLineAGC;
 end Components;
