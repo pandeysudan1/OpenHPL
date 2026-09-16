@@ -1,0 +1,41 @@
+// Simulate the three Trollheim reduced-order frequency-control cases.
+// Dependencies and OpenHPL are loaded by run_openmodelica_smoke.mos first.
+checkModel(OpenHPL.Examples.TrollheimControlStudies.IsochronousStudy);
+print(getErrorString());
+checkModel(OpenHPL.Examples.TrollheimControlStudies.DroopStudy);
+print(getErrorString());
+checkModel(OpenHPL.Examples.TrollheimControlStudies.AGCStudy);
+print(getErrorString());
+
+simulate(
+  OpenHPL.Examples.TrollheimControlStudies.IsochronousStudy,
+  startTime=0,
+  stopTime=60,
+  numberOfIntervals=1200,
+  tolerance=1e-7,
+  method="dassl",
+  outputFormat="csv",
+  fileNamePrefix="trollheim_isochronous");
+print(getErrorString());
+
+simulate(
+  OpenHPL.Examples.TrollheimControlStudies.DroopStudy,
+  startTime=0,
+  stopTime=60,
+  numberOfIntervals=1200,
+  tolerance=1e-7,
+  method="dassl",
+  outputFormat="csv",
+  fileNamePrefix="trollheim_droop");
+print(getErrorString());
+
+simulate(
+  OpenHPL.Examples.TrollheimControlStudies.AGCStudy,
+  startTime=0,
+  stopTime=60,
+  numberOfIntervals=1200,
+  tolerance=1e-7,
+  method="dassl",
+  outputFormat="csv",
+  fileNamePrefix="trollheim_agc");
+print(getErrorString());
