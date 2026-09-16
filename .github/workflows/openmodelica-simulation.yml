@@ -1,0 +1,51 @@
+name: OpenModelica simulation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - github-actions-openmodelica
+    paths:
+      - "OpenHPL/**"
+      - ".CI/run_openmodelica_smoke.mos"
+      - ".github/workflows/openmodelica-simulation.yml"
+  pull_request:
+    paths:
+      - "OpenHPL/**"
+      - ".CI/run_openmodelica_smoke.mos"
+      - ".github/workflows/openmodelica-simulation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  simulate:
+    name: Run SimpleTurbine with OpenModelica
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run OpenModelica
+        run: |
+          mkdir -p simulation-results
+          docker run --rm \
+            --volume "$PWD:/workspace" \
+            --workdir /workspace/simulation-results \
+            openmodelica/openmodelica:v1.25.7-minimal \
+            omc ../.CI/run_openmodelica_smoke.mos 2>&1 | tee openmodelica.log
+
+      - name: Show generated files
+        if: always()
+        run: find simulation-results -maxdepth 1 -type f -printf "%f\n" | sort
+
+      - name: Upload simulation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openmodelica-simple-turbine
+          path: simulation-results/
+          if-no-files-found: error
+          retention-days: 14
