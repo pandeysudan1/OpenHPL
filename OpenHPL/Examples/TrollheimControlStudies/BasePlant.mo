@@ -3,7 +3,7 @@ partial model BasePlant
   "Reservoir operating point, waterway, turbine, shaft-generator and grid load"
   parameter Real nominalFrequency(unit="Hz")=50;
   parameter Real initialPower=0.50 "Operating power in pu";
-  Modelica.Blocks.Interfaces.RealInput controlSignal;
+  Real controlSignal "Internal controller-to-servo command";
   Modelica.Blocks.Interfaces.RealOutput frequencyDeviation;
   Modelica.Blocks.Interfaces.RealOutput guideVaneDeviation;
   Modelica.Blocks.Interfaces.RealOutput flowDeviation;
