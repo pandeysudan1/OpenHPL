@@ -1,0 +1,28 @@
+// Headless OpenModelica smoke test for GitHub Actions.
+loadModel(Modelica, {"4.0.0"});
+print(getErrorString());
+
+loadFile("OpenHPL/package.mo");
+print(getErrorString());
+
+checkResult := checkModel(OpenHPL.Examples.SimpleTurbine);
+print(checkResult + "\n");
+print(getErrorString());
+
+simResult := simulate(
+  OpenHPL.Examples.SimpleTurbine,
+  startTime=0,
+  stopTime=10,
+  numberOfIntervals=100,
+  tolerance=1e-6,
+  method="dassl",
+  outputFormat="csv");
+print(simResult.messages + "\n");
+print(getErrorString());
+
+if simResult.resultFile == "" then
+  print("OpenModelica simulation failed: no result file was created.\n");
+  exit(1);
+end if;
+
+print("OpenModelica simulation completed: " + simResult.resultFile + "\n");
