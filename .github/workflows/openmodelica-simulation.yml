@@ -39,16 +39,21 @@ jobs:
             openmodelica/openmodelica:v1.25.7-minimal \
             omc ../.CI/run_openmodelica_smoke.mos 2>&1 \
             | tee simulation-results/openmodelica.log
+          test -s simulation-results/OpenHPL.Examples.SimpleTurbine_res.csv
 
-      - name: Show generated files
+      - name: Prepare generated files
         if: always()
-        run: find simulation-results -maxdepth 1 -type f -printf "%f\n" | sort
+        run: |
+          sudo chmod -R a+rX simulation-results
+          find simulation-results -maxdepth 1 -type f -printf "%f\n" | sort
 
       - name: Upload simulation results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: openmodelica-simple-turbine
-          path: simulation-results/
+          path: |
+            simulation-results/OpenHPL.Examples.SimpleTurbine_res.csv
+            simulation-results/openmodelica.log
           if-no-files-found: error
           retention-days: 14
