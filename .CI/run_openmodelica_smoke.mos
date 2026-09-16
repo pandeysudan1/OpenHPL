@@ -1,0 +1,34 @@
+// Headless OpenModelica smoke test for GitHub Actions.
+installPackage(Modelica, "4.0.0", exactMatch=true);
+print(getErrorString());
+installPackage(OpenIPSL, "3.0.0", exactMatch=true);
+print(getErrorString());
+
+if not loadModel(Modelica, {"4.0.0"}) then
+  print(getErrorString());
+  exit(1);
+end if;
+
+if not loadModel(OpenIPSL, {"3.0.0"}) then
+  print(getErrorString());
+  exit(1);
+end if;
+
+if not loadFile("../OpenHPL/package.mo") then
+  print(getErrorString());
+  exit(1);
+end if;
+
+checkResult := checkModel(OpenHPL.Examples.SimpleTurbine);
+print(checkResult + "\n");
+print(getErrorString());
+
+simulate(
+  OpenHPL.Examples.SimpleTurbine,
+  startTime=0,
+  stopTime=10,
+  numberOfIntervals=100,
+  tolerance=1e-6,
+  method="dassl",
+  outputFormat="csv");
+print(getErrorString());

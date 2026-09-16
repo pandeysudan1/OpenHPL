@@ -1,0 +1,85 @@
+name: OpenModelica simulation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - github-actions-openmodelica
+    paths:
+      - "OpenHPL/**"
+      - ".CI/run_openmodelica_smoke.mos"
+      - ".CI/run_trollheim_control_studies.mos"
+      - ".CI/plot_trollheim_control_studies.py"
+      - ".github/workflows/openmodelica-simulation.yml"
+  pull_request:
+    paths:
+      - "OpenHPL/**"
+      - ".CI/run_openmodelica_smoke.mos"
+      - ".CI/run_trollheim_control_studies.mos"
+      - ".CI/plot_trollheim_control_studies.py"
+      - ".github/workflows/openmodelica-simulation.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  simulate:
+    name: Run OpenHPL control studies
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run OpenModelica
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p simulation-results
+          docker run --rm \
+            --volume "$PWD:/workspace" \
+            --workdir /workspace/simulation-results \
+            openmodelica/openmodelica:v1.25.7-minimal \
+            bash -lc 'omc ../.CI/run_openmodelica_smoke.mos && omc ../.CI/run_trollheim_control_studies.mos' \
+            2>&1 | tee simulation-results/openmodelica.log
+          test -s simulation-results/OpenHPL.Examples.SimpleTurbine_res.csv
+          test -s simulation-results/trollheim_isochronous_res.csv
+          test -s simulation-results/trollheim_droop_res.csv
+          test -s simulation-results/trollheim_agc_res.csv
+          test -s simulation-results/trollheim_tieline_res.csv
+
+      - name: Prepare generated files
+        if: always()
+        run: |
+          sudo chmod -R a+rX simulation-results
+          find simulation-results -maxdepth 1 -type f -printf "%f\n" | sort
+
+      - name: Generate plots
+        run: |
+          python -m pip install --disable-pip-version-check matplotlib
+          python .CI/plot_trollheim_control_studies.py \
+            simulation-results studies/trollheim_control/results
+
+      - name: Upload simulation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openmodelica-trollheim-control-study
+          path: |
+            simulation-results/*_res.csv
+            simulation-results/openmodelica.log
+            studies/trollheim_control/results/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish plots to study page
+        if: github.event_name == 'push' && github.ref == 'refs/heads/github-actions-openmodelica'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add studies/trollheim_control/results
+          if ! git diff --cached --quiet; then
+            git commit -m "docs: update Trollheim control-study plots"
+            git push
+          fi
