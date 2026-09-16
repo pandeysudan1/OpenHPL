@@ -1,5 +1,20 @@
 // Simulate the three Trollheim reduced-order frequency-control cases.
-// Dependencies and OpenHPL are loaded by run_openmodelica_smoke.mos first.
+// The first OMC process installs dependencies; this process loads them again.
+if not loadModel(Modelica, {"4.0.0"}) then
+  print(getErrorString());
+  exit(1);
+end if;
+
+if not loadModel(OpenIPSL, {"3.0.0"}) then
+  print(getErrorString());
+  exit(1);
+end if;
+
+if not loadFile("../OpenHPL/package.mo") then
+  print(getErrorString());
+  exit(1);
+end if;
+
 checkModel(OpenHPL.Examples.TrollheimControlStudies.IsochronousStudy);
 print(getErrorString());
 checkModel(OpenHPL.Examples.TrollheimControlStudies.DroopStudy);
