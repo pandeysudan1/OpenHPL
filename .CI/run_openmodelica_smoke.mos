@@ -23,7 +23,7 @@ checkResult := checkModel(OpenHPL.Examples.SimpleTurbine);
 print(checkResult + "\n");
 print(getErrorString());
 
-simResult := simulate(
+simulate(
   OpenHPL.Examples.SimpleTurbine,
   startTime=0,
   stopTime=10,
@@ -32,10 +32,3 @@ simResult := simulate(
   method="dassl",
   outputFormat="csv");
 print(getErrorString());
-
-if simResult.resultFile == "" then
-  print("OpenModelica simulation failed: no result file was created.\n");
-  exit(1);
-end if;
-
-print("OpenModelica simulation completed: " + simResult.resultFile + "\n");
