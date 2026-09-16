@@ -1,0 +1,4 @@
+controller,frequency_nadir_hz,final_frequency_hz
+Isochronous,48.923183,49.999989
+Droop,49.427489,49.808590
+AGC,49.430278,49.976023
