@@ -29,13 +29,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run OpenModelica
+        shell: bash
         run: |
+          set -o pipefail
           mkdir -p simulation-results
           docker run --rm \
             --volume "$PWD:/workspace" \
             --workdir /workspace/simulation-results \
             openmodelica/openmodelica:v1.25.7-minimal \
-            omc ../.CI/run_openmodelica_smoke.mos 2>&1 | tee openmodelica.log
+            omc ../.CI/run_openmodelica_smoke.mos 2>&1 \
+            | tee simulation-results/openmodelica.log
 
       - name: Show generated files
         if: always()
