@@ -1,4 +1,4 @@
-import base64, csv, hashlib, json, math, pathlib, subprocess, zlib
+import os, base64, csv, hashlib, json, math, pathlib, subprocess, zlib
 root = pathlib.Path(__file__).resolve().parents[1]
 out = pathlib.Path("/tmp/openhpl-results")
 out.mkdir(exist_ok=True)
@@ -13,7 +13,9 @@ simulate(OpenHPL.Examples.SimpleTurbine, startTime=0, stopTime=1000, numberOfInt
 getErrorString();
 ''')
 version = subprocess.check_output(["omc", "--version"], text=True).strip()
-sha = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+sha = os.environ.get("RAILWAY_GIT_COMMIT_SHA", "unknown")
+if (root / ".git").exists():
+    sha = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
 run = subprocess.run(["omc", str(mos)], cwd=out, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=900)
 print(run.stdout, flush=True)
 (out / "solver.log").write_text(run.stdout)
