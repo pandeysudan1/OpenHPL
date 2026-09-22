@@ -39,7 +39,7 @@ model PumpTurbine "Simple reversible pump-turbine model with mechanical connecto
     annotation (choicesAllMatching = true, Dialog(group = "Turbine efficiency", enable = not ConstEfficiency));
   parameter SI.Efficiency eta_p = 0.9 "Hydraulic efficiency in pump mode"
     annotation (Dialog(group = "Pump efficiency"));
-  Modelica.Blocks.Interfaces.BooleanInput pumpMode_in if enable_modeInput
+  Modelica.Blocks.Interfaces.BooleanInput pumpMode_in = mode == OperatingMode.Pump
     "False = turbine mode, true = pump mode"
     annotation (Placement(transformation(origin = {-40, 120}, extent = {{-20, -20}, {20, 20}}), iconTransformation(origin = {-40, 120}, extent = {{-20, -20}, {20, 20}})));
   Modelica.Blocks.Math.Feedback lossCorrection
@@ -77,7 +77,7 @@ equation
   opening = min(1, max(0, u_t));
   efficiencyCurve.u[1] = opening;
   eta_t = if ConstEfficiency then eta_h else efficiencyCurve.y[1];
-  pumpModeActive = if enable_modeInput then pumpMode_in else mode == OperatingMode.Pump;
+  pumpModeActive = pumpMode_in;
 
   if pumpModeActive then
     (-dp) * (C_v_pump * max(epsilon, opening ^ alpha)) ^ 2 = Vdot * abs(Vdot);
@@ -114,9 +114,10 @@ OpenHPL hydraulic connectors together with the mechanical shaft representation f
       mechanical/electrical power is consumed.</li>
 </ul>
 
-<p>The default operating mode is selected by the parameter <code>mode</code>. If
-<code>enable_modeInput = true</code>, the Boolean input <code>pumpMode_in</code> can be used to switch
-between modes during simulation.</p>
+<p>The default operating mode is selected by the parameter <code>mode</code>. The Boolean input
+<code>pumpMode_in</code> is bound to this parameter by default, and an external connection can be used
+to switch between modes during simulation. The parameter <code>enable_modeInput</code> only controls
+the visual cue on the icon.</p>
 
 <h5>Hydraulic Characteristic</h5>
 <p>Both operating modes use a simple valve-like characteristic based on nominal head and
