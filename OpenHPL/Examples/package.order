@@ -2,6 +2,7 @@ BranchingPipes
 SimpleValve
 SimpleValveWithCreek
 SimpleTurbine
+SimplePumpTurbine
 DetailedTurbine
 SimpleGen
 SimpleGenFrancis
