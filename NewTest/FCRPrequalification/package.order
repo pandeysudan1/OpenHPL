@@ -1,3 +1,7 @@
 FrequencyStepSignal
+FrequencyRampSignal
+FrequencySineSignal
 FCRMetrics
 FCRStepTest
+FCRSineTest
+HydraulicFCRTest
