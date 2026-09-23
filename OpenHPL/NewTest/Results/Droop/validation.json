@@ -1,0 +1,72 @@
+{
+  "up_4pct": {
+    "expected_frequency_Hz": 49.9,
+    "final_droop_residual_pu": 3.961941008340936e-09,
+    "frequency_min_Hz": 48.90526954125893,
+    "frequency_max_Hz": 50.0,
+    "frequency_final_Hz": 49.89999979768962,
+    "initial_gate_pu": 0.4518267946131657,
+    "final_gate_pu": 0.4970696815098757,
+    "final_mechanical_power_MW": 55.555555768349784,
+    "final_power_imbalance_W": 0.2127942219376564,
+    "maximum_gate_rate_pu_per_s": 0.0100256778973562,
+    "last_time_outside_0_01_Hz_of_equilibrium_s": 132.1,
+    "validation": "PASS"
+  },
+  "down_4pct": {
+    "expected_frequency_Hz": 50.1,
+    "final_droop_residual_pu": -7.40672854169025e-09,
+    "frequency_min_Hz": 50.0,
+    "frequency_max_Hz": 51.08313308091279,
+    "frequency_final_Hz": 50.10000037819118,
+    "initial_gate_pu": 0.4518267946131657,
+    "final_gate_pu": 0.4065993634918572,
+    "final_mechanical_power_MW": 45.454545057840626,
+    "final_power_imbalance_W": -0.396704837679863,
+    "maximum_gate_rate_pu_per_s": 0.009900471233622032,
+    "last_time_outside_0_01_Hz_of_equilibrium_s": 131.8,
+    "validation": "PASS"
+  },
+  "hold": {
+    "expected_frequency_Hz": 50.0,
+    "final_droop_residual_pu": 0.0,
+    "frequency_min_Hz": 50.0,
+    "frequency_max_Hz": 50.0,
+    "frequency_final_Hz": 50.0,
+    "initial_gate_pu": 0.4518267946131657,
+    "final_gate_pu": 0.4518267946131657,
+    "final_mechanical_power_MW": 50.505050505050505,
+    "final_power_imbalance_W": 0.0,
+    "maximum_gate_rate_pu_per_s": 0.0,
+    "last_time_outside_0_01_Hz_of_equilibrium_s": null,
+    "validation": "PASS"
+  },
+  "up_5pct": {
+    "expected_frequency_Hz": 49.875,
+    "final_droop_residual_pu": -7.844718707527426e-09,
+    "frequency_min_Hz": 48.88816933778043,
+    "frequency_max_Hz": 50.0,
+    "frequency_final_Hz": 49.87500040302373,
+    "initial_gate_pu": 0.4518267946131657,
+    "final_gate_pu": 0.497069675846359,
+    "final_mechanical_power_MW": 55.55555511968521,
+    "final_power_imbalance_W": -0.435870349407196,
+    "maximum_gate_rate_pu_per_s": 0.00989303369277339,
+    "last_time_outside_0_01_Hz_of_equilibrium_s": 132.2,
+    "validation": "PASS"
+  },
+  "up_double_base": {
+    "expected_frequency_Hz": 49.95,
+    "final_droop_residual_pu": 7.482645419075451e-09,
+    "frequency_min_Hz": 49.07911813951586,
+    "frequency_max_Hz": 50.0,
+    "frequency_final_Hz": 49.94999961567777,
+    "initial_gate_pu": 0.4518267946131657,
+    "final_gate_pu": 0.4970696886882845,
+    "final_mechanical_power_MW": 55.55555658484451,
+    "final_power_imbalance_W": 1.029288955032825,
+    "maximum_gate_rate_pu_per_s": 0.005387278791983419,
+    "last_time_outside_0_01_Hz_of_equilibrium_s": 136.2,
+    "validation": "PASS"
+  }
+}

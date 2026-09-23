@@ -99,7 +99,7 @@ are illustrative OpenHPL demonstration values, not a reproduced Kundur benchmark
 This model represents one isolated, frequency-controlling hydro unit. It has
 no permanent droop, tie-line, AGC, voltage control, surge tank, elastic water-hammer
 model or detailed electromagnetic generator dynamics. The simple turbine does
-not include runner-speed dependence. Later droop and AGC examples should build
+not include runner-speed dependence. Later multi-generator and AGC examples should build
 on this verified case with explicitly different control laws and network models.
 
 ## Component icons
@@ -109,3 +109,11 @@ uses a blue frequency dial with a feedback loop and an ISO / PI caption. These
 are native Modelica vector graphics and scale in OMEdit without image assets.
 `NewTest.Icons.ControlBlock` supplies a shared frame for future power-system
 control components. Extend it with a distinctive symbol and caption.
+
+## Permanent droop example
+
+`OpenHPL.NewTest.PermanentDroopControl` demonstrates primary control with a
+permanent frequency offset. At 4% droop on a 100 MW base, a +5 MW step settles
+at 49.90 Hz and a -5 MW step at 50.10 Hz. See
+[the droop guide](PermanentDroopControl.md) for equations, experiments, verified
+results and the reusable `PermanentDroopGovernor` block.
