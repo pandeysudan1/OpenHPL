@@ -1,6 +1,6 @@
 within OpenHPL.NewTest.Controllers;
 block GateActuator "Gate servo with position and opening/closing rate limits"
-  extends Modelica.Blocks.Icons.Block;
+  extends OpenHPL.NewTest.Icons.GateActuator;
   parameter Modelica.SIunits.Time T(min=Modelica.Constants.small)=0.5;
   parameter Real yMin=0.01 "Positive minimum avoids the turbine's zero-gate singularity";
   parameter Real yMax=1;

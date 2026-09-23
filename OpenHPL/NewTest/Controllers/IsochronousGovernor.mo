@@ -1,6 +1,6 @@
 within OpenHPL.NewTest.Controllers;
 block IsochronousGovernor "PI speed control with actuator-tracking anti-windup"
-  extends Modelica.Blocks.Icons.Block;
+  extends OpenHPL.NewTest.Icons.Governor;
   parameter Modelica.SIunits.Frequency f_ref(min=Modelica.Constants.small)=50;
   parameter Real Kp(min=0)=2 "Gain on per-unit frequency error";
   parameter Real Ki(unit="1/s", min=0)=0.1 "Integral gain on per-unit frequency error";
