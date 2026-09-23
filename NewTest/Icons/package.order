@@ -2,3 +2,4 @@ ControlBlock
 GateActuator
 Governor
 DroopGovernor
+TransientDroopGovernor
