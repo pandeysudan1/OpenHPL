@@ -3,3 +3,4 @@ GateActuator
 Governor
 DroopGovernor
 TransientDroopGovernor
+SecondaryAGC
