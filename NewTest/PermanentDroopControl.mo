@@ -1,0 +1,55 @@
+within NewTest;
+model PermanentDroopControl "Isolated hydro generator: permanent frequency offset after a load step"
+  extends Modelica.Icons.Example;
+  parameter Modelica.SIunits.Frequency f_nom=50;
+  parameter Modelica.SIunits.Power P_base=100e6;
+  parameter Modelica.SIunits.Power P_load0=50e6;
+  parameter Modelica.SIunits.Power dP=5e6 "Positive for load increase; negative for decrease";
+  parameter Modelica.SIunits.Time stepTime=50;
+  parameter Modelica.SIunits.Time H=4 "Generator inertia constant on P_base";
+  parameter Integer poles=12;
+  parameter Real R(min=Modelica.Constants.small)=0.04 "Permanent droop, per unit";
+  final parameter Modelica.SIunits.AngularVelocity w_nom=4*Modelica.Constants.pi*f_nom/poles;
+  inner OpenHPL.Constants Const(f=f_nom, Steady=true, eps=0.0001, V_0=15);
+  OpenHPL.Waterway.Reservoir reservoir(H_r=50);
+  OpenHPL.Waterway.Pipe penstock(H=300,L=600,D_i=4,D_o=4,SteadyState=true);
+  OpenHPL.ElectroMech.Turbines.Turbine turbine(ValveCapacity=false,H_n=345,V_dot_n=35,u_n=0.95,ConstEfficiency=true,theta_h=0.9);
+  OpenHPL.Waterway.Reservoir tail(H_r=5);
+  OpenHPL.ElectroMech.Generators.SimpleGen generator(J=2*H*P_base/w_nom^2,p=poles,theta_e=0.99,k_b=0,SteadyState=false,w_0=w_nom);
+  Modelica.Blocks.Sources.Step load(offset=P_load0,height=dP,startTime=stepTime);
+  Controllers.PermanentDroopGovernor governor(f_ref=f_nom,P_base=P_base,R=R);
+  Modelica.Blocks.Sources.Constant powerReference(k=P_load0);
+  Modelica.Blocks.Sources.RealExpression powerMeasurement(y=generator.theta_e*turbine.P_out);
+  Controllers.GateActuator actuator;
+  output Modelica.SIunits.Frequency frequency;
+  output Modelica.SIunits.Frequency expectedFrequency;
+  output Real droopResidual;
+  output Modelica.SIunits.Power mechanicalPower;
+  output Modelica.SIunits.Power electricalDemand;
+  output Real gateOpening;
+  output Modelica.SIunits.VolumeFlowRate waterFlow;
+initial equation
+  der(generator.w)=0 "Solve initial gate/integrator from mechanical-electrical balance";
+  assert(P_load0>0 and P_load0+dP>0, "This example requires positive demand before and after the step");
+equation
+  connect(reservoir.n,penstock.p);
+  connect(penstock.n,turbine.p);
+  connect(turbine.n,tail.n);
+  connect(turbine.P_out,generator.P_in);
+  connect(load.y,generator.u);
+  connect(generator.f,governor.f);
+  connect(governor.y,actuator.u);
+  connect(actuator.y,turbine.u_t);
+  connect(actuator.y,governor.gate);
+  connect(powerMeasurement.y,governor.P);
+  connect(powerReference.y,governor.P_ref);
+  frequency=generator.f;
+  expectedFrequency=f_nom*(1-R*(load.y-powerReference.y)/P_base);
+  droopResidual=governor.e;
+  mechanicalPower=turbine.P_out;
+  electricalDemand=load.y;
+  gateOpening=actuator.y;
+  waterFlow=turbine.V_dot;
+  annotation(experiment(StartTime=0,StopTime=300,Interval=0.1,Tolerance=1e-7),
+    Documentation(info="<html><p>Reusable permanent-droop governor example using the same hydro plant and gate-actuator semantics as IsochronousControl.</p><p>With R=0.04, P_base=100 MW and a +5 MW load step, the unsaturated equilibrium reference is 49.90 Hz.</p><p>Plot frequency, expectedFrequency, droopResidual, mechanicalPower, gateOpening and waterFlow.</p></html>"));
+end PermanentDroopControl;
