@@ -3,3 +3,4 @@ IsochronousGovernor
 PermanentDroopGovernor
 TransientDroopGovernor
 SecondaryAGC
+FCRGovernor
