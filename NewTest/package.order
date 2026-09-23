@@ -4,3 +4,4 @@ IsochronousControl
 PermanentDroopControl
 TransientDroopControl
 AGCControl
+FCRControl
