@@ -2,3 +2,4 @@ GateActuator
 IsochronousGovernor
 PermanentDroopGovernor
 TransientDroopGovernor
+SecondaryAGC
