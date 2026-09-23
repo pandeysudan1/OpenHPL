@@ -3,3 +3,4 @@ Controllers
 IsochronousControl
 PermanentDroopControl
 TransientDroopControl
+AGCControl
