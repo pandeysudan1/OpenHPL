@@ -1,0 +1,9 @@
+installPackage(Modelica, "4.0.0", exactMatch=false);
+installPackage(OpenIPSL, "3.0.0", exactMatch=false);
+loadModel(Modelica, {"4.0.0"});
+loadFile("OpenHPL/package.mo");
+getErrorString();
+checkModel(OpenHPL.Examples.PipeHomotopyStep);
+getErrorString();
+simulate(OpenHPL.Examples.PipeHomotopyStep, startTime=0, stopTime=20, numberOfIntervals=1000, tolerance=1e-6, method="dassl", outputFormat="csv", fileNamePrefix="PipeHomotopyStep");
+getErrorString();

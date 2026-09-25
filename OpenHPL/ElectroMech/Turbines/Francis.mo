@@ -55,6 +55,9 @@ model Francis "Model of the Francis turbine"
     parameter Boolean WaterCompress = false "If checked the water is compressible in the penstock" annotation (
         choices(checkBox = true),
         Dialog(group = "Condition"));
+    parameter Boolean useHomotopy = true "Use simplified hydraulic relations during nonlinear initialization" annotation (
+        choices(checkBox = true),
+        Dialog(group = "Initialization"));
     // variables
     SI.Pressure p_r1 "Runner inlet pressure", dp_tr "Turbine pressure drop", dp_r "Runner pressure drop", p_tr2 "Turbine outlet pressure", dp_v "Guide vane pressure drop";
     SI.Area A_1 "Runner inlet cross section", A_0 "Turbine inlet cross section", A_v "Guide vane cross section", A_2 "Runner outlet cross section";
@@ -153,10 +156,14 @@ equation
   // condition for inlet water compressability
     if not WaterCompress then
         Vdot = mdot / data.rho;
-        dp_v = 0.5 * data.rho * (Vdot ^ 2 * (A_0 ^ 2 - A_v ^ 2 * sin_a1 ^ 2) / (A_0 ^ 2 * A_v ^ 2 * sin_a1 ^ 2) + k_fv) * Reduction;
+        dp_v = if useHomotopy then homotopy(
+          actual=0.5 * data.rho * (Vdot ^ 2 * (A_0 ^ 2 - A_v ^ 2 * sin_a1 ^ 2) / (A_0 ^ 2 * A_v ^ 2 * sin_a1 ^ 2) + k_fv) * Reduction,
+          simplified=0) else 0.5 * data.rho * (Vdot ^ 2 * (A_0 ^ 2 - A_v ^ 2 * sin_a1 ^ 2) / (A_0 ^ 2 * A_v ^ 2 * sin_a1 ^ 2) + k_fv) * Reduction;
     else
         Vdot = mdot / (data.rho * (1 + data.beta * (p_r1 - data.p_a)));
-        dp_v = 0.5 * data.rho * (1 + data.beta * (i.p - data.p_a)) * (Vdot ^ 2 * (A_0 ^ 2 - A_v ^ 2 * sin_a1 ^ 2) / (A_0 ^ 2 * A_v ^ 2 * sin_a1 ^ 2) + k_fv) * Reduction;
+        dp_v = if useHomotopy then homotopy(
+          actual=0.5 * data.rho * (1 + data.beta * (i.p - data.p_a)) * (Vdot ^ 2 * (A_0 ^ 2 - A_v ^ 2 * sin_a1 ^ 2) / (A_0 ^ 2 * A_v ^ 2 * sin_a1 ^ 2) + k_fv) * Reduction,
+          simplified=0) else 0.5 * data.rho * (1 + data.beta * (i.p - data.p_a)) * (Vdot ^ 2 * (A_0 ^ 2 - A_v ^ 2 * sin_a1 ^ 2) / (A_0 ^ 2 * A_v ^ 2 * sin_a1 ^ 2) + k_fv) * Reduction;
     end if;
   // condition for guide vane pressure drop (does not work well, better to skip guide vane pressure drop)
     if dp_v_condition then
@@ -203,7 +210,13 @@ equation
     cot_b2 =1/Modelica.Math.tan(Modelica.Units.Conversions.from_deg(beta2));
     cot_g1 = cot_a1 - w * R_1 / (noEvent(max(Vdot, Vdot_eps)) / A_1);
   // pressure drop through the turbine
-    dp_r * noEvent(max(Vdot, Vdot_eps)) + 0.5 * mdot * Vdot ^ 2 * (1 / A_0 ^ 2 - 1 / A_2 ^ 2) = Wdot_t;
+    if useHomotopy then
+      homotopy(
+        actual=dp_r * noEvent(max(Vdot, Vdot_eps)) + 0.5 * mdot * Vdot ^ 2 * (1 / A_0 ^ 2 - 1 / A_2 ^ 2) - Wdot_t,
+        simplified=dp_r * Vdot_n - Wdot_t) = 0;
+    else
+      dp_r * noEvent(max(Vdot, Vdot_eps)) + 0.5 * mdot * Vdot ^ 2 * (1 / A_0 ^ 2 - 1 / A_2 ^ 2) = Wdot_t;
+    end if;
     Wdot_t = Wdot_s + Wdot_ft;
     dp_r = p_r1 - p_tr2;
   // turbine efficiency

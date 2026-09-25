@@ -1,0 +1,35 @@
+name: Pipe Homotopy Step Test
+
+on:
+  push:
+    branches: [homotopy-initialization]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run OpenModelica simulation
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work openmodelica/openmodelica:v1.25.2-minimal omc scripts/pipe_homotopy_step.mos
+      - name: Verify result
+        run: test -f PipeHomotopyStep_res.csv
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate plots and Markdown
+        run: |
+          python -m pip install matplotlib
+          python scripts/plot_pipe_homotopy_step.py
+      - name: Add report to job summary
+        run: cat docs/PipeHomotopyStep/README.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pipe-homotopy-step-results
+          path: |
+            PipeHomotopyStep_res.csv
+            docs/PipeHomotopyStep/README.md
+            docs/PipeHomotopyStep/*.png

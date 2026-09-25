@@ -32,6 +32,8 @@ model SurgeTank "Model of the surge tank/shaft"
     Dialog(group = "Initialization",enable=SurgeTankType == OpenHPL.Types.SurgeTank.STAirCushion));
   parameter SI.Temperature T_ac(displayUnit="degC")=298.15 "Initial air-cushion temperature"
     annotation (Dialog(group = "Initialization", enable=SurgeTankType == OpenHPL.Types.SurgeTank.STAirCushion));
+  parameter Boolean useHomotopy=true "Use simplified loss and air-cushion relations during nonlinear initialization"
+    annotation (Dialog(group="Initialization"), choices(checkBox=true));
 
   SI.Mass m "Water mass";
   SI.MassFlowRate mdot "Mass flow rate";
@@ -92,15 +94,21 @@ equation
     m = data.rho * A * l;
     M = m * v;
     p_t = data.p_a;
-    F_f = Functions.DarcyFriction.Friction(v, D, l, data.rho, data.mu, p_eps) + A * phiSO * 0.5 * data.rho * abs(v) * v;
+    F_f = if useHomotopy then homotopy(
+      actual=Functions.DarcyFriction.Friction(v, D, l, data.rho, data.mu, p_eps) + A * phiSO * 0.5 * data.rho * abs(v) * v,
+      simplified=0) else Functions.DarcyFriction.Friction(v, D, l, data.rho, data.mu, p_eps) + A * phiSO * 0.5 * data.rho * abs(v) * v;
     phiSO = 0;
     F_p = (p_b - p_t) * A;
   elseif SurgeTankType == OpenHPL.Types.SurgeTank.STAirCushion then
     v = Vdot / A;
     m = data.rho * A * l + m_a;
     M = m * v;
-    p_t = p_ac * ((L - h_0 / cos_theta) / (L - l)) ^ data.gamma_air;
-    F_f = Functions.DarcyFriction.Friction(v, D, l, data.rho, data.mu, p_eps) + A * phiSO * 0.5 * data.rho * abs(v) * v;
+    p_t = if useHomotopy then homotopy(
+      actual=p_ac * ((L - h_0 / cos_theta) / (L - l)) ^ data.gamma_air,
+      simplified=p_ac) else p_ac * ((L - h_0 / cos_theta) / (L - l)) ^ data.gamma_air;
+    F_f = if useHomotopy then homotopy(
+      actual=Functions.DarcyFriction.Friction(v, D, l, data.rho, data.mu, p_eps) + A * phiSO * 0.5 * data.rho * abs(v) * v,
+      simplified=0) else Functions.DarcyFriction.Friction(v, D, l, data.rho, data.mu, p_eps) + A * phiSO * 0.5 * data.rho * abs(v) * v;
     phiSO = 0;
     F_p = (p_b - p_t) * A;
   elseif SurgeTankType == OpenHPL.Types.SurgeTank.STSharpOrifice then
@@ -108,7 +116,9 @@ equation
     m = data.rho * A * l;
     M = m * v;
     p_t = data.p_a;
-    F_f = Functions.DarcyFriction.Friction(v, D, l, data.rho, data.mu, p_eps) + A * phiSO * 0.5 * data.rho * abs(v) * v;
+    F_f = if useHomotopy then homotopy(
+      actual=Functions.DarcyFriction.Friction(v, D, l, data.rho, data.mu, p_eps) + A * phiSO * 0.5 * data.rho * abs(v) * v,
+      simplified=0) else Functions.DarcyFriction.Friction(v, D, l, data.rho, data.mu, p_eps) + A * phiSO * 0.5 * data.rho * abs(v) * v;
     F_p = (p_b - p_t) * A;
     if v >= 0 then
       phiSO = Functions.Fitting.FittingPhi(v, D, D_so, L, 90, data.rho, data.mu, p_eps, OpenHPL.Types.Fitting.SharpOrifice);
@@ -120,7 +130,9 @@ equation
       v = Vdot / A_t;
       m = data.rho * A_t * l;
       M = m * v;
-      F_f = Functions.DarcyFriction.Friction(v, D_t, l, data.rho, data.mu, p_eps) + A_t * phiSO * 0.5 * data.rho * abs(v) * v;
+      F_f = if useHomotopy then homotopy(
+        actual=Functions.DarcyFriction.Friction(v, D_t, l, data.rho, data.mu, p_eps) + A_t * phiSO * 0.5 * data.rho * abs(v) * v,
+        simplified=0) else Functions.DarcyFriction.Friction(v, D_t, l, data.rho, data.mu, p_eps) + A_t * phiSO * 0.5 * data.rho * abs(v) * v;
       phiSO = 0;
       F_p = (p_b - p_t) * A_t;
     else
@@ -128,10 +140,14 @@ equation
       m = data.rho * (A_t * L_t + A * (l - L_t));
       M = m * v;
       if v > 0 then
-        F_f = Functions.DarcyFriction.Friction(Vdot/A_t, D_t, L_t, data.rho, data.mu, p_eps) + Functions.DarcyFriction.Friction(Vdot/A, D, l - L_t, data.rho, data.mu, p_eps) + A_t * phiSO * 0.5 * data.rho * abs(Vdot/A_t) * Vdot/A_t;
+        F_f = if useHomotopy then homotopy(
+          actual=Functions.DarcyFriction.Friction(Vdot/A_t, D_t, L_t, data.rho, data.mu, p_eps) + Functions.DarcyFriction.Friction(Vdot/A, D, l - L_t, data.rho, data.mu, p_eps) + A_t * phiSO * 0.5 * data.rho * abs(Vdot/A_t) * Vdot/A_t,
+          simplified=0) else Functions.DarcyFriction.Friction(Vdot/A_t, D_t, L_t, data.rho, data.mu, p_eps) + Functions.DarcyFriction.Friction(Vdot/A, D, l - L_t, data.rho, data.mu, p_eps) + A_t * phiSO * 0.5 * data.rho * abs(Vdot/A_t) * Vdot/A_t;
         phiSO = Functions.Fitting.FittingPhi(Vdot/A_t, D_t, D, L, 90, data.rho, data.mu, p_eps, OpenHPL.Types.Fitting.Square);
       elseif v < 0 then
-        F_f = Functions.DarcyFriction.Friction(Vdot/A_t, D_t, L_t, data.rho, data.mu, p_eps) + Functions.DarcyFriction.Friction(Vdot/A, D, l - L_t, data.rho, data.mu, p_eps) + A * phiSO * 0.5 * data.rho * abs(Vdot/A) * Vdot/A;
+        F_f = if useHomotopy then homotopy(
+          actual=Functions.DarcyFriction.Friction(Vdot/A_t, D_t, L_t, data.rho, data.mu, p_eps) + Functions.DarcyFriction.Friction(Vdot/A, D, l - L_t, data.rho, data.mu, p_eps) + A * phiSO * 0.5 * data.rho * abs(Vdot/A) * Vdot/A,
+          simplified=0) else Functions.DarcyFriction.Friction(Vdot/A_t, D_t, L_t, data.rho, data.mu, p_eps) + Functions.DarcyFriction.Friction(Vdot/A, D, l - L_t, data.rho, data.mu, p_eps) + A * phiSO * 0.5 * data.rho * abs(Vdot/A) * Vdot/A;
         phiSO = Functions.Fitting.FittingPhi(Vdot/A, D, D_t, L, 90, data.rho, data.mu, p_eps, OpenHPL.Types.Fitting.Square);
       else
         F_f = 0;
@@ -210,6 +226,9 @@ is consistent with the rest of the waterway:
 $$ z_\\mathrm{creek} = z_\\mathrm{o} + H_\\mathrm{creek} $$</p>
 <p>The creek inflow is included in the mass balance:</p>
 <p>$$ \\frac{\\mathrm{d}m}{\\mathrm{d}t} = \\rho \\dot{V} + \\dot{m}_\\mathrm{creek} $$</p>
+
+<h5>Homotopy-assisted initialization</h5>
+<p>With <code>useHomotopy=true</code>, nonlinear Darcy/orifice loss terms are continuously introduced from a zero-loss simplified model. For the air-cushion configuration, the nonlinear gas-pressure relation is introduced from the initial cushion pressure <code>p_ac</code>. The actual equations are unchanged during time simulation.</p>
 
 <h5>Parameters and Initialization</h5>
 
