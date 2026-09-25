@@ -16,6 +16,8 @@ partial model BaseValve "Simple hydraulic valve (base class)"
   parameter SI.PerUnit u_n = 1 "Nominal opening"
     annotation (Dialog(group = "Nominal values", enable = not ValveCapacity));
   parameter Real alpha=1 "Exponent of closing curve (if different from 1, the closing law will be non-linear)" annotation(Dialog(tab="Advanced", group = "Closing law"));
+  parameter Boolean useHomotopy=true "Use a linearized valve pressure-flow law during nonlinear initialization"
+    annotation(Dialog(tab="Advanced", group="Initialization"), choices(checkBox=true));
 
   SI.Pressure dp "Pressure drop";
   SI.MassFlowRate mdot "Mass flow rate";
@@ -32,7 +34,14 @@ equation
   i.mdot + o.mdot = 0;
   mdot = i.mdot;
   Vdot = mdot/data.rho;
-  dp*(C_v_*max(epsilon, u^alpha))^2 = Vdot*abs(Vdot) "Valve equation for pressure drop";
+  if useHomotopy then
+    homotopy(
+      actual=dp*(C_v_*max(epsilon, u^alpha))^2 - Vdot*abs(Vdot),
+      simplified=dp*(C_v_*max(epsilon, u_n^alpha))^2 - Vdot*abs(Vdot_n)) = 0
+      "Valve pressure-flow residual with linearized initialization branch";
+  else
+    dp*(C_v_*max(epsilon, u^alpha))^2 = Vdot*abs(Vdot) "Valve equation for pressure drop";
+  end if;
   dp = i.p - o.p "Link the pressure drop to the ports";
   o.elevation.z = i.elevation.z "Elevation propagation: no height change across valve";
   annotation (preferredView="info", Documentation(info="<html>
