@@ -20,6 +20,8 @@ model Pipe "Model of a pipe"
   parameter SI.VolumeFlowRate Vdot_0=data.Vdot_0 "Initial flow rate of the pipe" annotation (Dialog(group="Initialization"));
   parameter Boolean useInitialFlow=true "If false, skip initial equation for flow (e.g., when flow is imposed by a source)"
     annotation (Dialog(group="Initialization"), choices(checkBox=true));
+  parameter Boolean useHomotopy=true "Use a linearized friction law during nonlinear initialization"
+    annotation (Dialog(group="Initialization"), choices(checkBox=true));
 
   SI.Velocity v "Average Water velocity";
   SI.Force F_f "Friction force";
@@ -37,6 +39,12 @@ protected
     parameter Real cf=1+2*delta^2 "Conical pipe function";
     parameter Real cos_theta = H / L "Slope ratio";
     parameter Modelica.Units.NonSI.Angle_deg phi = Modelica.Units.Conversions.to_deg(Modelica.Math.atan((abs(D_i-D_o)/(2*L)))) "Cone half angle";
+    final parameter SI.VolumeFlowRate Vdot_homotopy_ref = if abs(Vdot_0) > 1e-6 then Vdot_0 else 1e-3
+      "Reference flow used to linearize Darcy friction for initialization";
+    final parameter SI.Velocity v_homotopy_ref = Vdot_homotopy_ref/A_;
+    final parameter SI.Force F_f_homotopy_ref = Functions.DarcyFriction.Friction(v_homotopy_ref, D_, L, data.rho, data.mu, p_eps)*cf;
+    final parameter Real K_f_homotopy(unit="N.s/m") = abs(F_f_homotopy_ref/v_homotopy_ref)
+      "Slope of simplified linear friction law";
 
 initial equation
   if useInitialFlow then
@@ -52,7 +60,13 @@ equation
 
   Vdot = mdot / data.rho "Volumetric flow rate through the pipe";
   v = Vdot / A_ "Average water velocity";
-  F_f = Functions.DarcyFriction.Friction(v, D_, L, data.rho, data.mu, p_eps)*cf "Friction force";
+  F_f = if useHomotopy then
+          homotopy(
+            actual=Functions.DarcyFriction.Friction(v, D_, L, data.rho, data.mu, p_eps)*cf,
+            simplified=K_f_homotopy*v)
+        else
+          Functions.DarcyFriction.Friction(v, D_, L, data.rho, data.mu, p_eps)*cf
+        "Friction force; homotopy uses a linearized initialization law";
   L * der(mdot)=(p_i+ data.rho *data.g * H-p_o)*A_ -F_f;
   p_i = i.p "Inlet pressure";
   p_o = o.p "Outlet pressure";
@@ -102,6 +116,12 @@ taper geometry: 0.05–0.15 for gentle cones, up to 0.6 for sharp contractions.<
 <h5>Friction Specification</h5>
 <p>Friction is specified via the inherited <a href=\"modelica://OpenHPL.Waterway.BaseClasses.FrictionSpec\">FrictionSpec</a>
 base class, which supports pipe roughness, Moody friction factor, and Manning coefficient methods.</p>
+
+<h5>Homotopy-assisted initialization</h5>
+<p>When <code>useHomotopy=true</code>, the full Darcy friction law is retained as the
+<code>actual</code> model while a linear friction law around <code>Vdot_0</code> is supplied as the
+<code>simplified</code> model. The simplified law is used only by tools that perform global homotopy
+initialization. During normal simulation the physical Darcy friction law is used.</p>
 
 <h5>Initialization</h5>
 <p>By default, the pipe provides an initial equation for the flow rate: either <code>der(mdot) = 0</code>
