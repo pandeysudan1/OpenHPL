@@ -1,0 +1,13 @@
+{
+  "validation/results/AGCControl.csv": "6d1488dcb82e065f9e2dddc07cc1132a58dd6e9c9041446869348a9b0a4f3fb0",
+  "validation/results/FCRComparison.csv": "9be9973cfea37b8f32de127b8a07f2407999ae5905c4304afb18704c9e1c4c32",
+  "validation/results/FCRControl.csv": "4a5bb349bc111045070675a041c02ffd354578c7d3eb492df1d26fcad9ef73de",
+  "validation/results/FCRSineTest.csv": "0a2d22a80495ee672b0d2d4045b2c6c25a79856302afcb0af7c1bff8ac9923ad",
+  "validation/results/FCRStepTest.csv": "8a752814fde1eff30fecfe235af75ee7dc047a5d26d4b19e8bd6e87c0af8ca67",
+  "validation/results/HydraulicFCRTest.csv": "4a5bb349bc111045070675a041c02ffd354578c7d3eb492df1d26fcad9ef73de",
+  "validation/results/IsochronousControl.csv": "12491b1ecc7e0cf2a018dc20e94bb589060a895b2db280d638d054b946f6a6f4",
+  "validation/results/PermanentDroopControl.csv": "2a835bc057b3a7b513fb63ba6c7c60017c26d40e304a60973ab88793e915e1ba",
+  "validation/results/TransientDroopControl.csv": "8990645824a2b00254e1b8c39ce39733d665c230549327733aebd8c5624bf507",
+  "validation/results/source_sha256.json": "2ba9a341a66784600afff839b03f5dcf63078f76abe3380c0d9a12f759ad5b3f",
+  "validation/results/summary.json": "8ced49a61d50080a0dced156ca0310f0471c12081241af3d91002e14000d6889"
+}

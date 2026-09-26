@@ -1,0 +1,66 @@
+{
+  "IsochronousControl": {
+    "stop_s": 300,
+    "final_Hz": 49.99999950876315,
+    "minimum_Hz": 48.97185278502515,
+    "final_gate": 0.4970696842119497,
+    "max_gate_rate_per_s": 0.010604350988284566,
+    "final_shaft_imbalance_W": 0.5225029140710831
+  },
+  "PermanentDroopControl": {
+    "stop_s": 300,
+    "final_Hz": 49.89999946346185,
+    "minimum_Hz": 48.9052727638287,
+    "final_gate": 0.4970696846676431,
+    "max_gate_rate_per_s": 0.010024246177831611,
+    "final_shaft_imbalance_W": 0.5748097375035286
+  },
+  "TransientDroopControl": {
+    "stop_s": 300,
+    "final_Hz": 49.89999962842659,
+    "minimum_Hz": 48.85810403267347,
+    "final_gate": 0.497069683118449,
+    "max_gate_rate_per_s": 0.009092953469777527,
+    "final_shaft_imbalance_W": 0.3973911181092262
+  },
+  "AGCControl": {
+    "stop_s": 8000,
+    "final_Hz": 49.99986201875733,
+    "minimum_Hz": 48.90761637577019,
+    "final_gate": 0.4970696954717977,
+    "max_gate_rate_per_s": 0.00978075194046013,
+    "final_shaft_imbalance_W": 1.766512148082256
+  },
+  "FCRControl": {
+    "stop_s": 300,
+    "final_Hz": 49.77378557481957,
+    "minimum_Hz": 49.61939538022742,
+    "final_gate": 0.4970696796492541,
+    "max_gate_rate_per_s": 0.04990113645370205,
+    "final_shaft_imbalance_W": -2.235174179077148e-08
+  },
+  "FCRComparison": {
+    "stop_s": 300,
+    "final_Hz": 49.77378557481957,
+    "minimum_Hz": 49.61939538028462,
+    "final_gate": 0.497069679649254,
+    "max_gate_rate_per_s": 0.049901136508418834,
+    "final_shaft_imbalance_W": 7.450580596923828e-09
+  },
+  "HydraulicFCRTest": {
+    "stop_s": 300,
+    "final_Hz": 49.77378557481957,
+    "minimum_Hz": 49.61939538022742,
+    "final_gate": 0.4970696796492541,
+    "max_gate_rate_per_s": 0.04990113645370205,
+    "final_shaft_imbalance_W": -2.235174179077148e-08
+  },
+  "FCRStepTest": {
+    "stop_s": 80,
+    "final_gate_reserve": 0.1000000000001081,
+    "time_to_90_s": 1.972171414278417
+  },
+  "FCRSineTest": {
+    "stop_s": 180
+  }
+}

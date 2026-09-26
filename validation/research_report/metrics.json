@@ -1,0 +1,62 @@
+[
+  {
+    "model": "IsochronousControl",
+    "label": "Isochronous",
+    "nadir_Hz": 48.97185278502515,
+    "time_to_nadir_s": 7.299999999999997,
+    "final_Hz": 49.99999950876315,
+    "target_Hz": 50.0,
+    "settling_10mHz_s": 81.80000000000001,
+    "nominal_recovery_10mHz_s": 81.80000000000001,
+    "IAE_250s_Hz_s": 24.88355665232488,
+    "duration_s": 300.0
+  },
+  {
+    "model": "PermanentDroopControl",
+    "label": "Permanent droop",
+    "nadir_Hz": 48.9052727638287,
+    "time_to_nadir_s": 8.100000000000001,
+    "final_Hz": 49.89999946346185,
+    "target_Hz": 49.9,
+    "settling_10mHz_s": 82.19999999999999,
+    "nominal_recovery_10mHz_s": null,
+    "IAE_250s_Hz_s": 49.85176772993692,
+    "duration_s": 300.0
+  },
+  {
+    "model": "TransientDroopControl",
+    "label": "Transient droop",
+    "nadir_Hz": 48.85810403267347,
+    "time_to_nadir_s": 8.0,
+    "final_Hz": 49.89999962842659,
+    "target_Hz": 49.9,
+    "settling_10mHz_s": 82.0,
+    "nominal_recovery_10mHz_s": null,
+    "IAE_250s_Hz_s": 50.24773585933148,
+    "duration_s": 300.0
+  },
+  {
+    "model": "AGCControl",
+    "label": "AGC + droop",
+    "nadir_Hz": 48.90761637577019,
+    "time_to_nadir_s": 8.0,
+    "final_Hz": 49.99986201875733,
+    "target_Hz": 50.0,
+    "settling_10mHz_s": 2596.0,
+    "nominal_recovery_10mHz_s": 2596.0,
+    "IAE_250s_Hz_s": 43.31840321282387,
+    "duration_s": 8000.0
+  },
+  {
+    "model": "FCRControl",
+    "label": "FCR",
+    "nadir_Hz": 49.61939538022742,
+    "time_to_nadir_s": 1.7000000000000028,
+    "final_Hz": 49.77378557481957,
+    "target_Hz": 49.77378557481957,
+    "settling_10mHz_s": 10.899999999999999,
+    "nominal_recovery_10mHz_s": null,
+    "IAE_250s_Hz_s": 56.61203050827438,
+    "duration_s": 300.0
+  }
+]

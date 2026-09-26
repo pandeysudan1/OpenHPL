@@ -15,6 +15,26 @@ The OpenHPL library provides comprehensive models for:
 
 OpenHPL makes it possible to model hydropower systems of different complexity and connect them with models from other libraries, e.g., with models of the power system or other power generating sources. The library is built on Modelica 4.0.0 and integrates with OpenIPSL for power system analysis.
 
+## Power system control research examples
+
+`OpenHPLTest.NewTest` contains connected hydropower examples for isochronous control,
+permanent and transient droop, secondary AGC, and frequency containment control.
+The baseline experiment increases electrical demand from 50 to 55 MW at 50 s.
+
+![Baseline electrical load step](validation/research_report/figures/load_step_input.png)
+
+![Simulated frequency step responses](validation/research_report/figures/frequency_response.png)
+
+Read the [research briefing and experiment design](validation/research_report/README.md)
+or download the [eight-page PDF report](validation/research_report/OpenHPL_research_briefing.pdf).
+The report includes plant architecture, power and gate responses, AGC recovery,
+quantitative metrics, and an explanation for research and Statnett discussions.
+Its [experiment matrix](validation/research_report/experiment_matrix.csv) distinguishes
+five reused baseline runs from 189 planned design rows. These simulations do not
+establish FCR prequalification or measured plant performance.
+
+See [simulation validation and rerun instructions](validation/README.md).
+
 ## Current release
 
 Download [OpenHPL v4.0.0 (2026-08-24)](../../releases/tag/v4.0.0)
