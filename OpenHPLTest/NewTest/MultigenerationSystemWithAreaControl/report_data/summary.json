@@ -1,0 +1,35 @@
+{
+  "scenario": {
+    "study": "NorwayNO1NO2AreaControl",
+    "disturbance_time_s": 200.0,
+    "disturbance_area": "NO1",
+    "disturbance_mw": 6.0,
+    "scheduled_tie_line_mw": -8.0
+  },
+  "frequency": {
+    "initial_no1_hz": 50.0,
+    "initial_no2_hz": 50.0,
+    "minimum_no1_hz": 49.39693139116451,
+    "minimum_no2_hz": 49.40933521981341,
+    "final_no1_hz": 49.99953434875714,
+    "final_no2_hz": 49.99953435484101
+  },
+  "tie_line": {
+    "initial_mw": -8.0,
+    "minimum_mw": -14.835429756990951,
+    "maximum_mw": -7.6942573681572926,
+    "final_mw": -7.996328431126968
+  },
+  "agc": {
+    "final_pref_no1_mw": 50.98614011156829,
+    "final_pref_no2_mw": 59.96755306819789,
+    "peak_ace_no1_mw": -18.40573888478126,
+    "peak_ace_no2_mw": -13.90163694859787
+  },
+  "generation": {
+    "initial_no1_mw": 45.0,
+    "initial_no2_mw": 60.0,
+    "final_no1_mw": 51.00275753407089,
+    "final_no2_mw": 59.99488834884336
+  }
+}
