@@ -1,0 +1,23 @@
+{
+  "isochronous": {
+    "steady_height_m": 99.97713930270363,
+    "final_height_m": 100.1636737585737,
+    "peak_height_m": 100.2180635906453,
+    "min_frequency_hz": 48.97364597499688,
+    "max_frequency_hz": 50.00897352765739,
+    "final_frequency_hz": 50.00827761905122,
+    "final_gate_opening": 0.4967833295914588,
+    "final_water_flow_m3s": 18.30179373859395
+  },
+  "agc": {
+    "initial_height_m": 99.97713930270363,
+    "final_height_m": 99.97243533885145,
+    "peak_height_m": 100.2103590366684,
+    "min_frequency_hz": 48.90836717657671,
+    "max_frequency_hz": 50.00000000000245,
+    "final_frequency_hz": 49.99985947804694,
+    "final_gate_opening": 0.4970697912762616,
+    "final_water_flow_m3s": 18.30871633660436,
+    "final_agc_correction_mw": 4.993109478091605
+  }
+}
